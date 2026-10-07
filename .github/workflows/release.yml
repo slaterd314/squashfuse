@@ -1,37 +1,30 @@
+name: release
 on:
-  push:
-    # Sequence of patterns matched against refs/tags
-    tags:
-    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
-
-name: Create Release
+  release:
+    types: [created]
 
 jobs:
-  build:
-    name: Create Release
-    runs-on: windows-2016
+  release_assets:
+    name: release_assets
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'created'
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@master
-      - name: Build SQUASHFS-Win...
-        run:  .\.github\workflows\ymlBuild.bat
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Install apt dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y automake autoconf libtool pkg-config \
+            zlib1g-dev liblzo2-dev liblzma-dev liblz4-dev libzstd-dev fio \
+            libfuse-dev fuse
+      - name: Build
+        run: |
+          ./autogen.sh
+          ./configure
+          make dist V=1
+      - name: Release
+        uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: true
-      - name: Create Release Asset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: .\win\installer\x64\ReleaseMT\squashfs_win.msi
-          asset_name: squashfs_win.msi
-          asset_content_type: application/octet-stream
+          files: |
+            *.tar.gz

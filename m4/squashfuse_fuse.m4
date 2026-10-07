@@ -143,13 +143,36 @@ AC_DEFUN([SQ_FIND_FUSE],[
 			[AC_MSG_FAILURE([Can't find FUSE in specified directories])])
 	])
 	
-	# pkgconfig
+	# Use pkgconfig to look for fuse3.
 	AS_IF([test "x$sq_fuse_found" = xyes],,[
 		SQ_SAVE_FLAGS
-		SQ_PKG([fuse],[fuse >= 2.5],
-			[SQ_TRY_FUSE(,[sq_fuse_found=yes],
-				[AC_MSG_FAILURE([Can't find FUSE with pkgconfig])])],
+		SQ_PKG([fuse3],[fuse3 >= 3.2],
+			[ AC_DEFINE([FUSE_USE_VERSION], [32], [Version of FUSE API to use])
+              SQ_TRY_FUSE(,[sq_fuse_found=yes],
+	        [AC_MSG_FAILURE([Can't find FUSE with pkgconfig])])],
 			[:])
+		SQ_KEEP_FLAGS([FUSE],[$sq_fuse_found])
+	])
+	# Use pkgconfig to look for fuse2.
+	AS_IF([test "x$sq_fuse_found" = xyes],,[
+        AC_DEFINE([FUSE_USE_VERSION], [26], [Version of FUSE API to use])
+		SQ_SAVE_FLAGS
+		SQ_PKG([fuse],[fuse >= 2.6],
+            [SQ_TRY_FUSE(,[sq_fuse_found=yes],
+	        [AC_MSG_FAILURE([Can't find FUSE with pkgconfig])])],
+			[:])
+		SQ_KEEP_FLAGS([FUSE],[$sq_fuse_found])
+	])
+	# Use pkgconfig to look for fuse-t
+	AS_IF([test "x$sq_fuse_found" = xyes],,[
+        AC_DEFINE([FUSE_USE_VERSION], [26], [Version of FUSE API to use])
+		SQ_SAVE_FLAGS
+		SQ_PKG([fuse_t],[fuse-t],[
+			# FUSE-T bug can mis-install header path: https://github.com/macos-fuse-t/fuse-t/issues/77
+			CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64 -I/Library/Frameworks/fuse_t.framework/Headers"
+			SQ_TRY_FUSE([fuse-t],[sq_fuse_found=yes],
+	        [AC_MSG_FAILURE([Can't find fuse-t with pkgconfig])])
+		], [:])
 		SQ_KEEP_FLAGS([FUSE],[$sq_fuse_found])
 	])
 	
@@ -174,42 +197,42 @@ AC_DEFUN([SQ_FIND_FUSE],[
 AC_DEFUN([SQ_FUSE_API],[
 	AC_ARG_ENABLE([high-level],
 		AS_HELP_STRING([--disable-high-level], [disable high-level FUSE driver]),,
-		[enable_high_level=yes])
+		[sq_high_level=yes])
 	AC_ARG_ENABLE([low-level],
 		AS_HELP_STRING([--disable-low-level], [disable low-level FUSE driver]),,
-		[enable_low_level=check])
+		[sq_low_level=check])
 	AC_ARG_ENABLE(fuse,
 		AS_HELP_STRING([--disable-fuse], [disable all FUSE drivers]))
 	AS_IF([test "x$enable_fuse" = xno],[
-		enable_high_level=no
-		enable_low_level=no
+		sq_high_level=no
+		sq_low_level=no
 	])
 
-	AS_IF([test "x$enable_high_level$enable_low_level" = xnono],,[SQ_FIND_FUSE])
+	AS_IF([test "x$sq_high_level$sq_low_level" = xnono],,[SQ_FIND_FUSE])
 ])
 
 # SQ_FUSE_API_LOWLEVEL
 #
 # Check if we have the low-level FUSE API available
 AC_DEFUN([SQ_FUSE_API_LOWLEVEL],[
-	AS_IF([test "x$enable_low_level" = xno],,[
+	AS_IF([test "x$sq_low_level" = xno],,[
 		SQ_SAVE_FLAGS
 		LIBS="$LIBS $FUSE_LIBS"
 		CPPFLAGS="$CPPFLAGS $FUSE_CPPFLAGS"
 	
 		sq_fuse_lowlevel_found=yes
-		AC_CHECK_DECL([fuse_lowlevel_new],,[sq_fuse_lowlevel_found=no],
+		AC_CHECK_DECL([fuse_session_loop],,[sq_fuse_lowlevel_found=no],
 			[#include <fuse_lowlevel.h>])
-		AC_CHECK_FUNC([fuse_lowlevel_new],,[sq_fuse_lowlevel_found=no])
+		AC_CHECK_FUNC([fuse_session_loop],,[sq_fuse_lowlevel_found=no])
 	
 		SQ_RESTORE_FLAGS
 		
 		AS_IF([test "x$sq_fuse_lowlevel_found" = xno],[
 			sq_err="The low-level FUSE API is not available"
-			AS_IF([test "x$enable_low_level" = xyes],[AC_MSG_FAILURE($sq_err)],
+			AS_IF([test "x$sq_low_level" = xyes],[AC_MSG_FAILURE($sq_err)],
 				[AC_MSG_WARN($sq_err)])
 		])
-		enable_low_level="$sq_fuse_lowlevel_found"
+		sq_low_level="$sq_fuse_lowlevel_found"
 	])
 ])
 
@@ -217,11 +240,12 @@ AC_DEFUN([SQ_FUSE_API_LOWLEVEL],[
 #
 # Handle the results of FUSE checks
 AC_DEFUN([SQ_FUSE_RESULT],[
-	AS_IF([test "x$enable_high_level$enable_low_level" = xnono],[
+	AS_IF([test "x$sq_high_level$sq_low_level" = xnono],[
 		AC_MSG_WARN([Without any FUSE support, you will not be able to mount squashfs archives])
 	])
-	AM_CONDITIONAL([SQ_WANT_HIGHLEVEL], [test "x$enable_high_level" = xyes])
-	AM_CONDITIONAL([SQ_WANT_LOWLEVEL], [test "x$enable_low_level" = xyes])
+	AM_CONDITIONAL([SQ_WANT_HIGHLEVEL], [test "x$sq_high_level" = xyes])
+	AM_CONDITIONAL([SQ_WANT_LOWLEVEL], [test "x$sq_low_level" = xyes])
+	AM_CONDITIONAL([SQ_WANT_FUSE], [test "x$sq_high_level$sq_low_level" != xnono])
 ])
 
 # SQ_FUSE_API_VERSION
@@ -232,7 +256,7 @@ AC_DEFUN([SQ_FUSE_API_VERSION],[
 	LIBS="$LIBS $FUSE_LIBS"
 	CPPFLAGS="$CPPFLAGS $FUSE_CPPFLAGS"
 	
-	AS_IF([test "x$enable_low_level" = xyes],[
+	AS_IF([test "x$sq_low_level" = xyes],[
 		AC_CHECK_DECLS([fuse_add_direntry,fuse_add_dirent],[found_dirent=yes],,
 			[#include <fuse_lowlevel.h>])
 		AS_IF([test "x$found_dirent" = xyes],,
@@ -248,7 +272,9 @@ AC_DEFUN([SQ_FUSE_API_VERSION],[
 		AC_CACHE_CHECK([for two-argument fuse_unmount],
 				[sq_cv_decl_fuse_unmount_two_arg],[
 			AC_LINK_IFELSE(
-				[AC_LANG_PROGRAM([#include <fuse_lowlevel.h>],
+				[AC_LANG_PROGRAM([
+				#include <fuse.h>
+				#include <fuse_lowlevel.h>],
 					[fuse_unmount(0,0)])],
 				[sq_cv_decl_fuse_unmount_two_arg=yes],
 				[sq_cv_decl_fuse_unmount_two_arg=no])
@@ -257,6 +283,28 @@ AC_DEFUN([SQ_FUSE_API_VERSION],[
 			AC_DEFINE([HAVE_NEW_FUSE_UNMOUNT],1,
 					[Define if we have two-argument fuse_unmount])
 		])
+
+		AC_CACHE_CHECK([for 64_t third argument to fuse ll forget op],
+				[sq_cv_decl_fuse_forget_64_t],[
+			AC_LINK_IFELSE(
+				[AC_LANG_PROGRAM([
+				#include <fuse.h>
+				#include <fuse_lowlevel.h>],
+					[
+					void f(fuse_req_t, fuse_ino_t, uint64_t);
+					struct fuse_lowlevel_ops flo;
+					flo.forget = f;
+					])],
+				[sq_cv_decl_fuse_forget_64_t=yes],
+				[sq_cv_decl_fuse_forget_64_t=no])
+		])
+		AS_IF([test "x$sq_cv_decl_fuse_forget_64_t" = xyes],[
+			AC_DEFINE([HAVE_FUSE_LL_FORGET_OP_64T],1,
+					[Define if we have uint64_t as type of 3rd arg to ll forget op])
+		])
+
+		AC_CHECK_DECLS([fuse_cmdline_help],,,
+		        [#include <fuse_lowlevel.h>])
 	])
 	
 	SQ_RESTORE_FLAGS
@@ -285,4 +333,36 @@ AC_DEFUN([SQ_FUSE_API_XATTR_POSITION],[
 	])
 	
 	SQ_RESTORE_FLAGS
+])
+
+# SQ_FUSE_API_MACFUSE_EXTENSIONS
+#
+# Check if we need to disable macFUSE extensions
+AC_DEFUN([SQ_FUSE_API_MACFUSE_EXTENSIONS],[
+	AC_DEFUN([SQ_FUSE_API_MACFUSE_EXTENSIONS_SOURCE],[
+		AC_LANG_PROGRAM([#include <fuse.h>],[
+			struct fuse_operations ops;
+			int (*getattr_func)(const char*, struct stat*, struct fuse_file_info*);
+			ops.getattr = getattr_func;
+	])])
+
+	AC_CACHE_CHECK([if we need to disable macFUSE extensions],
+		[sq_cv_decl_fuse_macfuse_extensions],[
+		SQ_SAVE_FLAGS
+		LIBS="$LIBS $FUSE_LIBS"
+		CPPFLAGS="$CPPFLAGS $FUSE_CPPFLAGS"
+		AC_COMPILE_IFELSE([SQ_FUSE_API_MACFUSE_EXTENSIONS_SOURCE],
+			[sq_cv_decl_fuse_macfuse_extensions=no],
+			[
+				CPPFLAGS="$CPPFLAGS -DFUSE_DARWIN_ENABLE_EXTENSIONS=0"
+				AC_COMPILE_IFELSE([SQ_FUSE_API_MACFUSE_EXTENSIONS_SOURCE],
+					[sq_cv_decl_fuse_macfuse_extensions=yes],
+					[sq_cv_decl_fuse_macfuse_extensions=no])
+			])
+		SQ_RESTORE_FLAGS
+	])
+
+	AS_IF([test "x$sq_cv_decl_fuse_macfuse_extensions" = xyes],[
+		CPPFLAGS="$CPPFLAGS -DFUSE_DARWIN_ENABLE_EXTENSIONS=0"
+	])
 ])

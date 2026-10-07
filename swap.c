@@ -24,9 +24,8 @@
  */
 #include "swap.h"
 
-#ifdef BIG_ENDIAN
-
-/* #define SWAP(BITS) \
+#ifndef HAVE_ASM_BYTEORDER_H
+#define SWAP(BITS) \
 	void sqfs_swapin##BITS(uint##BITS##_t *v) { \
 		int i; \
 		uint8_t *c = (uint8_t*)v; \
@@ -76,23 +75,6 @@ SWAP(16)
 SWAP(32)
 SWAP(64)
 #undef SWAP
-*/
-
-
-void sqfs_swapin16_internal(__le16 *v) { sqfs_swapin16((uint16_t*)v); }
-void sqfs_swapin32_internal(__le32 *v) { sqfs_swapin32((uint32_t*)v); }
-void sqfs_swapin64_internal(__le64 *v) { sqfs_swapin64((uint64_t*)v); }
-#else
-
-void sqfs_swapin16(uint16_t *v) { ((void)v);  }
-void sqfs_swapin32(uint32_t *v) { ((void)v);  }
-void sqfs_swapin64(uint64_t *v) { ((void)v);  }
-
-
-void sqfs_swapin16_internal(__le16 *v) { ((void)v);  }
-void sqfs_swapin32_internal(__le32 *v) { ((void)v); }
-void sqfs_swapin64_internal(__le64 *v) { ((void)v); }
-
 #endif
 
 void sqfs_swap16(uint16_t *n) {

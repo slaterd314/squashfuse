@@ -73,6 +73,11 @@ sqfs_err sqfs_dir_lookup(sqfs *fs, sqfs_inode *inode,
 sqfs_err sqfs_lookup_path(sqfs *fs, sqfs_inode *inode, const char *path,
 	bool *found);
 
+/* Similar to sqfs_lookup_path, additionaly replaces *id
+   with sqfs_inode_id of inode */
+sqfs_err sqfs_lookup_path_with_id(sqfs *fs, sqfs_inode *inode, const char *path,
+	bool *found, sqfs_inode_id *id);
+
 
 /* Accessors on sqfs_dir_entry */
 sqfs_off_t			sqfs_dentry_offset			(sqfs_dir_entry *entry);

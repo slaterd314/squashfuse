@@ -32,7 +32,8 @@
 #include <fuse_lowlevel.h>
 #endif
 
-#include <sys/stat.h>
+#define NOTIFY_SUCCESS 's'
+#define NOTIFY_FAILURE 'f'
 
 /* Common functions for FUSE high- and low-level clients */
 
@@ -43,18 +44,27 @@ sqfs_err sqfs_stat(sqfs *fs, sqfs_inode *inode, struct fuse_stat *st);
 int sqfs_listxattr(sqfs *fs, sqfs_inode *inode, char *buf, size_t *size);
 
 /* Print a usage string */
-void sqfs_usage(char *progname, bool fuse_usage);
+int sqfs_usage(char *progname, bool fuse_usage, bool ll_usage);
 
 /* Parse command-line arguments */
 typedef struct {
 	char *progname;
 	const char *image;
+	const char *subdir;
 	int mountpoint;
 	size_t offset;
 	unsigned int idle_timeout_secs;
 	int have_unc_path;
+	int uid;
+	int gid;
+	const char *notify_pipe;
 } sqfs_opts;
 int sqfs_opt_proc(void *data, const char *arg, int key,
 	struct fuse_args *outargs);
+
+/* Get filesystem super block info */
+int sqfs_statfs(sqfs *sq, struct statvfs *st);
+void notify_mount_ready(const char *notify_pipe, char status);
+void notify_mount_ready_async(const char *notify_pipe, char status);
 
 #endif

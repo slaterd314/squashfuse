@@ -24,6 +24,7 @@
  */
 #include "squashfuse.h"
 #include "fuseprivate.h"
+#include "stat.h"
 
 #include "nonstd.h"
 
@@ -32,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #ifdef _MSC_VER
 #include <fcntl.h>
@@ -71,12 +73,24 @@ static void sqfs_hl_op_destroy(void *user_data) {
 	free(hl);
 }
 
-static void *sqfs_hl_op_init(struct fuse_conn_info *conn, struct fuse_config *conf) {
-	return fuse_get_context()->private_data;
+static void *sqfs_hl_op_init(struct fuse_conn_info *conn
+#if FUSE_USE_VERSION >= 30
+			     ,struct fuse_config *cfg
+#endif
+			     ) {
+	sqfs_hl *hl = fuse_get_context()->private_data;
+
+	notify_mount_ready_async(hl->fs.notify_pipe, NOTIFY_SUCCESS);
+
+	return hl;
 }
 
-static int sqfs_hl_op_getattr(const char *path, struct fuse_stat *st, struct fuse_file_info *fi) {
-	sqfs *fs=NULL;
+static int sqfs_hl_op_getattr(const char *path, struct stat *st
+#if FUSE_USE_VERSION >= 30
+			      , struct fuse_file_info *fi
+#endif
+			      ) {
+	sqfs *fs;
 	sqfs_inode inode;
 
 	sqfs_inode *pInode = NULL;
@@ -129,7 +143,11 @@ static int sqfs_hl_op_releasedir(const char *path,
 }
 
 static int sqfs_hl_op_readdir(const char *path, void *buf,
-		fuse_fill_dir_t filler, fuse_off_t offset, struct fuse_file_info *fi, enum fuse3_readdir_flags flags) {
+		fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi
+#if FUSE_USE_VERSION >= 30
+	,enum fuse_readdir_flags flags
+#endif
+	) {
 	sqfs_err err;
 	sqfs *fs;
 	sqfs_inode *inode;
@@ -140,17 +158,51 @@ static int sqfs_hl_op_readdir(const char *path, void *buf,
 
 	sqfs_hl_lookup(&fs, NULL, NULL);
 	inode = (sqfs_inode*)(intptr_t)fi->fh;
+		
+#ifdef SQFS_BROKEN_DIR_OFFSETS
+	offset = 0;
+#endif
+
+	memset(&st, 0, sizeof(st));
+
+	st.st_mode = S_IFDIR;
+	while (offset < 2) {
+		/* fill "." for offset 0 and ".." for offset 1 */
+		const char *name;
+		if (offset == 0)
+			name = ".";
+		else
+			name = "..";
+		offset += 1;
+		if (filler(buf, name, &st, (sqfs_off_t) offset
+#if FUSE_USE_VERSION >= 30
+			   , 0
+#endif
+		     )) {
+			return 0;
+		}
+	}
+	offset -= 2;
 
 	if (sqfs_dir_open(fs, inode, &dir, offset))
 		return -EINVAL;
-
-	memset(&st, 0, sizeof(st));
+	
 	sqfs_dentry_init(&entry, namebuf);
 	while (sqfs_dir_next(fs, &dir, &entry, &err)) {
+#ifdef SQFS_BROKEN_DIR_OFFSETS
+		sqfs_off_t doff = 0;
+#else
 		sqfs_off_t doff = sqfs_dentry_next_offset(&entry);
+#endif
+		doff += 2; /* to skip "." and ".." */
 		st.st_mode = sqfs_dentry_mode(&entry);
-		if (filler(buf, sqfs_dentry_name(&entry), &st, doff, flags))
+		if (filler(buf, sqfs_dentry_name(&entry), &st, doff
+#if FUSE_USE_VERSION >= 30
+			   , 0
+#endif
+		     )) {
 			return 0;
+		}
 	}
 	if (err)
 		return -EIO;
@@ -260,7 +312,13 @@ static int sqfs_hl_op_getxattr(const char *path, const char *name,
 	return (int)real;
 }
 
-static sqfs_hl *sqfs_hl_open(const char *path, size_t offset) {
+static int sqfs_hl_op_statfs(const char *path, struct statvfs *st) {
+	sqfs_hl *hl = fuse_get_context()->private_data;
+	return sqfs_statfs(&hl->fs, st);
+}
+
+
+static sqfs_hl *sqfs_hl_open(const char *path, size_t offset, const char *subdir) {
 	sqfs_hl *hl;
 
 	hl = malloc(sizeof(*hl));
@@ -268,7 +326,7 @@ static sqfs_hl *sqfs_hl_open(const char *path, size_t offset) {
 		perror("Can't allocate memory");
 	} else {
 		memset(hl, 0, sizeof(*hl));
-		if (sqfs_open_image(&hl->fs, path, offset) == SQFS_OK) {
+		if (sqfs_open_image_with_subdir(&hl->fs, path, offset, subdir) == SQFS_OK) {
 			if (sqfs_inode_get(&hl->fs, &hl->root, sqfs_inode_root(&hl->fs)))
 				fprintf(stderr, "Can't find the root of this filesystem!\n");
 			else
@@ -290,6 +348,8 @@ int main(int argc, char *argv[]) {
 
 	struct fuse_opt fuse_opts[] = {
 		{"offset=%zu", offsetof(sqfs_opts, offset), 0},
+		{"subdir=%s", offsetof(sqfs_opts, subdir), 0},
+		{"notify_pipe=%s", offsetof(sqfs_opts, notify_pipe), 0},
 		FUSE_OPT_END
 	};
 
@@ -308,27 +368,43 @@ int main(int argc, char *argv[]) {
 	sqfs_hl_ops.readlink	= sqfs_hl_op_readlink;
 	sqfs_hl_ops.listxattr	= sqfs_hl_op_listxattr;
 	sqfs_hl_ops.getxattr	= sqfs_hl_op_getxattr;
-
+	sqfs_hl_ops.statfs    = sqfs_hl_op_statfs;
+  
 	args.argc = argc;
 	args.argv = argv;
 	args.allocated = 0;
 
 	opts.progname = argv[0];
 	opts.image = NULL;
+	opts.subdir = NULL;
 	opts.mountpoint = 0;
 	opts.offset = 0;
-	opts.have_unc_path = 0;
-	if (fuse_opt_parse(&args, &opts, fuse_opts, sqfs_opt_proc) == -1)
-		sqfs_usage(argv[0], true);
-	if (!opts.image)
-		sqfs_usage(argv[0], true);
+	opts.notify_pipe = NULL;
+	if (fuse_opt_parse(&args, &opts, fuse_opts, sqfs_opt_proc) == -1) {
+		ret = sqfs_usage(argv[0], true, false);
+		goto out;
+	}
+	if (!opts.image) {
+		ret = sqfs_usage(argv[0], true, false);
+		goto out;
+	}
+	
+	hl = sqfs_hl_open(opts.image, opts.offset, opts.subdir);
+	if (!hl) {
+		ret = -1;
+		goto out;
+	}
 
-	hl = sqfs_hl_open(opts.image, opts.offset);
-	if (!hl)
-		return -1;
-
+	hl->fs.notify_pipe = opts.notify_pipe;
+	
 	fuse_opt_add_arg(&args, "-s"); /* single threaded */
 	ret = fuse_main(args.argc, args.argv, &sqfs_hl_ops, hl);
+out:
+	if (ret) {
+		if (opts.notify_pipe) {
+			notify_mount_ready(opts.notify_pipe, NOTIFY_FAILURE);
+		}
+	}
 	fuse_opt_free_args(&args);
 	return ret;
 }

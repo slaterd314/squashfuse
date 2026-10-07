@@ -51,6 +51,7 @@ Runtime requirements:
       - lzo2
       - xz (aka. liblzma)
       - lz4
+      - zstd
   - (optional) libattr, for better extended attribute support on Linux
 
 Build requirements:
@@ -113,19 +114,46 @@ detailed instructions:
 2d. Example: Ubuntu
 -------------------
 
-For example on Ubuntu 16.04:
+For example on Ubuntu 22.04:
 
-sudo apt-get -y install git autoconf libtool make gcc libtool libfuse-dev liblzma-dev
-libtoolize --force
-aclocal
-autoheader
-automake --force-missing --add-missing
-autoconf
-./configure --with-xz=/usr/lib/
-make
+  $ sudo apt install gcc make pkg-config libfuse3-dev \
+    zlib1g-dev liblzo2-dev liblzma-dev liblz4-dev libzstd-dev \
+    automake autoconf libtool \
+    fuse3 fio squashfs-tools
+  $ ./autogen.sh
+  $ ./configure
+  $ make -j4
+  $ make check
+  $ sudo make install
 
+2e. Example: NixOS
+------------------
 
-2e. Usage
+For example on NixOS:
+
+  $ nix-shell
+  $ ./autogen.sh
+  $ ./configure
+  $ make -j4
+
+To install to your system, a custom Nix package should be built. Otherwise,
+you can simply move the binaries to `~/.local/bin'
+
+2f. Example: macOS
+------------------
+
+On macOS, for example, install macFUSE, and then:
+
+  $ brew install autoconf automake pkg-config libtool lzo xz
+  $ ./autogen.sh
+  $ ./configure --prefix=/usr/local/ \
+        --with-lzo=/usr/local/Cellar/lzo/2.10 \
+        --with-xz=/usr/local/Cellar/xz/5.4.4
+  $ make -j
+  $ make check
+  $ make install
+
+2g. Usage
 ---------
 You'll need a SquashFS archive to use squashfuse. If you don't already have
 one, you can create one using the `mksquashfs' utility from the squashfs-tools
@@ -210,7 +238,7 @@ Squashfuse currently comprises three programs:
 3c. Features
 ------------
 Squashfuse supports the following SquashFS features: 
-  - zlib, LZO, LZMA2 and LZ4 decompression
+  - zlib, LZO, LZMA2, LZ4 and zstd decompression
   - Fast, indexed directory lookup
   - Fast, indexed seeking within files
   - Caching of decompressed blocks
