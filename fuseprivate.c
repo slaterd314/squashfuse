@@ -257,7 +257,7 @@ struct notify_mount_ready_async_args {
 	char status;
 };
 
-static unsigned __stdcall notify_mount_ready_async_thread(void *arg) {
+static unsigned notify_mount_ready_async_thread(void *arg) {
 	struct notify_mount_ready_async_args *args = (struct notify_mount_ready_async_args *)arg;
 	notify_mount_ready(args->notify_pipe, args->status);
 	free(args->notify_pipe);
