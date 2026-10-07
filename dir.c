@@ -27,6 +27,7 @@
 #include "fs.h"
 #include "swap.h"
 
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -63,7 +64,8 @@ sqfs_err sqfs_dir_open(sqfs *fs, sqfs_inode *inode, sqfs_dir *dir,
 		fs->sb.directory_table_start;
 	dir->cur.offset = inode->xtra.dir.offset;
 	dir->offset = 0;
-	dir->total = inode->xtra.dir.dir_size - 3;
+	dir->total = inode->xtra.dir.dir_size <= 3 ? 0 :
+                inode->xtra.dir.dir_size - 3;
 	
 	if (offset) {
 		/* Fast forward to the given offset */
@@ -148,7 +150,11 @@ bool sqfs_dir_next(sqfs *fs, sqfs_dir *dir, sqfs_dir_entry *entry,
 	entry->inode = ((uint64_t)dir->header.start_block << 16) + e.offset;
 	/* e.inode_number is signed */
 	entry->inode_number = dir->header.inode_number + (int16_t)e.inode_number;
-	
+
+	if (entry->name_size > SQUASHFS_NAME_LEN) {
+		*err = SQFS_ERR;
+		return false;
+	}
 	*err = sqfs_dir_md_read(fs, dir, entry->name, sqfs_dentry_name_size(entry));
 	if (*err)
 		return false;
@@ -234,7 +240,9 @@ static sqfs_err sqfs_dir_ff_name_f(sqfs *fs, sqfs_md_cursor *cur,
 	sqfs_err err;
 	sqfs_dir_ff_name_t *args = (sqfs_dir_ff_name_t*)arg;
 	size_t name_size = index->size + 1;
-	
+	if (name_size > SQUASHFS_NAME_LEN)
+		return SQFS_ERR;
+
 	if ((err = sqfs_md_read(fs, cur, args->name, name_size)))
 		return err;
 	args->name[name_size] = '\0';
@@ -251,12 +259,12 @@ sqfs_err sqfs_dir_lookup(sqfs *fs, sqfs_inode *inode,
 	sqfs_err err;
 	sqfs_dir dir;
 	sqfs_dir_ff_name_t arg;
-	
+
 	*found = false;
-	
+
 	if ((err = sqfs_dir_open(fs, inode, &dir, 0)))
 		return err;
-	
+
 	/* Fast forward to header */
 	arg.cmp = name;
 	arg.cmplen = namelen;
@@ -272,20 +280,20 @@ sqfs_err sqfs_dir_lookup(sqfs *fs, sqfs_inode *inode,
 		if (order >= 0)
 			break;
 	}
-	
+
 	return err;
 }
 
 
-sqfs_err sqfs_lookup_path(sqfs *fs, sqfs_inode *inode, const char *path,
-		bool *found) {
+sqfs_err sqfs_lookup_path_with_id(sqfs *fs, sqfs_inode *inode, const char *path,
+		bool *found, sqfs_inode_id *id) {
 	sqfs_err err;
 	sqfs_name buf;
 	sqfs_dir_entry entry;
 	
 	*found = false;
 	sqfs_dentry_init(&entry, buf);
-	
+
 	while (*path) {
 		const char *name;
 		size_t size;
@@ -306,7 +314,8 @@ sqfs_err sqfs_lookup_path(sqfs *fs, sqfs_inode *inode, const char *path,
 			return err;
 		if (!dfound)
 			return SQFS_OK; /* not found */
-		
+		if (id)
+			*id = sqfs_dentry_inode(&entry);
 		if ((err = sqfs_inode_get(fs, inode, sqfs_dentry_inode(&entry))))
 			return err;
 	}
@@ -314,3 +323,8 @@ sqfs_err sqfs_lookup_path(sqfs *fs, sqfs_inode *inode, const char *path,
 	*found = true;
 	return SQFS_OK;
 }
+
+sqfs_err sqfs_lookup_path(sqfs *fs, sqfs_inode *inode, const char *path,
+		bool *found) {
+	return sqfs_lookup_path_with_id(fs, inode, path, found, NULL);
+};

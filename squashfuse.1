@@ -41,13 +41,33 @@ The filesystem can be unmounted using
 .Xr umount 8
 or
 .Xr fusermount 8 .
+The
+.Nm
+implementation is single-threaded.
 .Pp
-A selection of FUSE options:
+Options supported by the
+.Xr fuse 8
+library are supported.
+In addition the following options are supported:
 .Bl -tag -width -indent
-.It Fl V, -version
-show FUSE version
+.It Fl o Cm offset=N
+offset N bytes into archive to mount
+.El
+.Bl -tag -width -indent
+.It Fl o Cm subdir=PATH
+mount subdirectory PATH as filesystem root
+.El
+.Bl -tag -width -indent
+.It Fl o Cm notify_pipe=PATH
+named pipe that will receive 's' (success) or 'f' (failure) when the mountpoint is ready
+.El
+.Pp
+Here is a selection of generally useful FUSE library options:
+.Bl -tag -width -indent
 .It Fl h, -help
 print help
+.It Fl V, -version
+show FUSE version
 .It Fl d, o Cm debug
 enable debug output (implies
 .Fl f )
@@ -59,6 +79,7 @@ allow access by other users
 allow access by the superuser
 .El
 .Sh SEE ALSO
+.Xr fuse 8 ,
 .Xr fusermount 8 ,
 .Xr mount 8 ,
 .Xr umount 8
