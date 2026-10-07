@@ -72,5 +72,7 @@ EXPORTS
 	sqfs_pread
 	sqfs_makedev
 	sqfs_print_compression_info
-
-
+    sqfs_open_image_with_subdir
+    sqfs_statfs
+    notify_mount_ready
+    notify_mount_ready_async

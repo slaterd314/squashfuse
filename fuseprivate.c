@@ -176,7 +176,7 @@ int sqfs_opt_proc(void *data, const char *arg, int key,
 		}
 	} else if (key == FUSE_OPT_KEY_OPT) {
 		if (strncmp(arg, "-h", 2) == 0 || strncmp(arg, "--h", 3) == 0) {
-			sqfs_usage(opts->progname, true);
+			sqfs_usage(opts->progname, true, true);
 			return -1;
 		}
 	}
@@ -229,6 +229,8 @@ err:
 	return;
 }
 
+#ifndef WIN32
+
 void notify_mount_ready_async(const char *notify_pipe, char status) {
 	if (!notify_pipe) {
 		return;
@@ -245,3 +247,43 @@ void notify_mount_ready_async(const char *notify_pipe, char status) {
 	else { /* parent process */
 	}
 }
+#else
+
+#include "win32.h"
+#include <process.h>
+
+struct notify_mount_ready_async_args {
+	const char* notify_pipe;
+	char status;
+};
+
+static unsigned __stdcall notify_mount_ready_async_thread(void *arg) {
+	struct notify_mount_ready_async_args *args = (struct notify_mount_ready_async_args *)arg;
+	notify_mount_ready(args->notify_pipe, args->status);
+	free(args->notify_pipe);
+	free(args);
+	return 0;
+}
+
+void notify_mount_ready_async(const char* notify_pipe, char status) {
+	if (!notify_pipe) {
+		return;
+	}
+	struct notify_mount_ready_async_args* args = (struct notify_mount_ready_async_args*)malloc(sizeof(struct notify_mount_ready_async_args));
+	if (!args) {
+		fprintf(stderr, "Failed to allocate memory for notify_mount_ready_async_args\n");
+		return;
+	}
+	args->notify_pipe = _strdup(notify_pipe);
+	args->status = status;
+
+	uintptr_t success = _beginthread(notify_mount_ready_async_thread, 0, args);
+	if (success == -1) {
+		fprintf(stderr, "Failed to create thread for notify_mount_ready_async\n");
+		free(args->notify_pipe);
+		free(args);
+	}
+}
+
+#endif
+

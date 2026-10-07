@@ -35,8 +35,9 @@
 			r += c[i]; \
 		} \
 		*v = r; \
-	} */
+	}
 
+/*
 void sqfs_swapin16(uint16_t *v) {
 		int i;
 		uint8_t *c = (uint8_t*)v;
@@ -69,8 +70,8 @@ void sqfs_swapin64(uint64_t *v) {
 	}
 	*v = r;
 }
+*/
 
-/*
 SWAP(16)
 SWAP(32)
 SWAP(64)

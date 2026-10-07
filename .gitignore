@@ -30,6 +30,8 @@ win/Release
 *.opensdf
 *.suo
 *.vcxproj.user
+.vs
+
 
 ci/features
 tests/lib.sh

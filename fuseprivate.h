@@ -65,6 +65,8 @@ int sqfs_opt_proc(void *data, const char *arg, int key,
 /* Get filesystem super block info */
 int sqfs_statfs(sqfs *sq, struct statvfs *st);
 void notify_mount_ready(const char *notify_pipe, char status);
+#ifndef WIN32
 void notify_mount_ready_async(const char *notify_pipe, char status);
+#endif
 
 #endif

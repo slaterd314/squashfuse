@@ -145,6 +145,7 @@ int sqfs_symlink(sqfs *fs, const char *path1, const char *path2)
 	((void)fs);
 	return symlink(path1, path2);
 }
+#endif
 
 sqfs_err sqfs_open_image(sqfs *fs, const char *image, size_t offset) {
 	return sqfs_open_image_with_subdir(fs, image, offset, NULL);
