@@ -32,45 +32,46 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>winsquashfs</RootNamespace>
     <ProjectName>squashfuse</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -301,36 +302,24 @@ xcopy $(ProjectDir)doc\images $(Outdir)images /S /Y /I
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)help.html;%(Outputs)</Outputs>
       <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</TreatOutputAsContent>
       <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</BuildInParallel>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">curl --form input_files[]=@%(FullPath) --form other_files[]=@%(Rootdir)%(DIRECTORY)\github.css --form from=markdown --form to=html --form css=github.css -o$(Outdir)%(Filename).html http://c.docverter.com/convert 
-copy %(Rootdir)%(DIRECTORY)github.css $(OutDir)
-xcopy %(Rootdir)%(DIRECTORY)images $(OutDir)images /S /I /Y
-
-</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|Win32'">curl --form input_files[]=@%(FullPath) --form other_files[]=@%(Rootdir)%(DIRECTORY)\github.css --form from=markdown --form to=html --form css=github.css -o$(Outdir)%(Filename).html http://c.docverter.com/convert 
-copy %(Rootdir)%(DIRECTORY)github.css $(OutDir)
-xcopy %(Rootdir)%(DIRECTORY)images $(OutDir)images /S /I /Y
-
-</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">curl --form input_files[]=@%(FullPath) --form other_files[]=@%(Rootdir)%(DIRECTORY)\github.css --form from=markdown --form to=html --form css=github.css -o$(Outdir)%(Filename).html http://c.docverter.com/convert 
-copy %(Rootdir)%(DIRECTORY)github.css $(OutDir)
-xcopy %(Rootdir)%(DIRECTORY)images $(OutDir)images /S /I /Y
-
-</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">curl --form input_files[]=@%(FullPath) --form other_files[]=@%(Rootdir)%(DIRECTORY)\github.css --form from=markdown --form to=html --form css=github.css -o$(Outdir)%(Filename).html http://c.docverter.com/convert 
-copy %(Rootdir)%(DIRECTORY)github.css $(OutDir)
-xcopy %(Rootdir)%(DIRECTORY)images $(OutDir)images /S /I /Y
-
-</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">curl --form input_files[]=@%(FullPath) --form other_files[]=@%(Rootdir)%(DIRECTORY)\github.css --form from=markdown --form to=html --form css=github.css -o$(Outdir)%(Filename).html http://c.docverter.com/convert 
-copy %(Rootdir)%(DIRECTORY)github.css $(OutDir)
-xcopy %(Rootdir)%(DIRECTORY)images $(OutDir)images /S /I /Y
-
-</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">curl --form input_files[]=@%(FullPath) --form other_files[]=@%(Rootdir)%(DIRECTORY)\github.css --form from=markdown --form to=html --form css=github.css -o$(Outdir)%(Filename).html http://c.docverter.com/convert 
-copy %(Rootdir)%(DIRECTORY)github.css $(OutDir)
-xcopy %(Rootdir)%(DIRECTORY)images $(OutDir)images /S /I /Y
-
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">pandoc --from=gfm --to=html5 --data-dir=. --output=$(Outdir)%(Filename).html --css=file://./github.css %(FullPath)
+copy /Y %(Rootdir)%(DIRECTORY)github.css $(OutDir)
+xcopy %(Rootdir)%(DIRECTORY)images $(OutDir)images /Y /S /I </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|Win32'">pandoc --from=gfm --to=html5 --data-dir=. --output=$(Outdir)%(Filename).html --css=file://./github.css %(FullPath)
+copy /Y %(Rootdir)%(DIRECTORY)github.css $(OutDir)
+xcopy %(Rootdir)%(DIRECTORY)images $(OutDir)images /Y /S /I </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">pandoc --from=gfm --to=html5 --data-dir=. --output=$(Outdir)%(Filename).html --css=file://./github.css %(FullPath)
+copy /Y %(Rootdir)%(DIRECTORY)github.css $(OutDir)
+xcopy %(Rootdir)%(DIRECTORY)images $(OutDir)images /Y /S /I </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pandoc --from=gfm --to=html5 --data-dir=. --output=$(Outdir)%(Filename).html --css=file://./github.css %(FullPath)
+copy /Y %(Rootdir)%(DIRECTORY)github.css $(OutDir)
+xcopy %(Rootdir)%(DIRECTORY)images $(OutDir)images /Y /S /I </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">pandoc --from=gfm --to=html5 --data-dir=. --output=$(Outdir)%(Filename).html --css=file://./github.css %(FullPath)
+copy /Y %(Rootdir)%(DIRECTORY)github.css $(OutDir)
+xcopy %(Rootdir)%(DIRECTORY)images $(OutDir)images /Y /S /I </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pandoc --from=gfm --to=html5 --data-dir=. --output=$(Outdir)%(Filename).html --css=file://./github.css %(FullPath)
+copy /Y %(Rootdir)%(DIRECTORY)github.css $(OutDir)
+xcopy %(Rootdir)%(DIRECTORY)images $(OutDir)images /Y /S /I </Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

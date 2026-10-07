@@ -58,7 +58,7 @@ umount
     umounts squashfs file system mounted on [directory]
 
 [mapnetworkdrive]: ./images/MapNetworkDrive.jpg "Map Network Drive"
-[WinFsp]:http://www.secfs.net/winfsp/ "WinFsp Site"
+[WinFsp]:https://winfsp.dev/ "WinFsp Site"
 [Squashfuse]: https://github.com/vasi/squashfuse "Squashfuse Project Site"
 [FUSE]: https://en.wikipedia.org/wiki/Filesystem_in_Userspace "FUSE Wiki Article"
 

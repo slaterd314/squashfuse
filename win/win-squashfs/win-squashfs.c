@@ -36,7 +36,7 @@ const char *VOLUMEPREFIX = "--VolumePrefix=%s";
 static void log_cmdline(int argc, const wchar_t **argv)
 {
 	FILE *fp = NULL;
-	auto err = _wfopen_s(&fp,L"c:\\Users\\dslat\\win-squashfs.log", L"w+");
+	auto err = _wfopen_s(&fp,L"c:\\Users\\dslat\\win-squashfs.log", L"a+");
 	if (fp)
 	{
 		for (int i = 0; i < argc; ++i)
@@ -52,7 +52,7 @@ static void log_cmdline(int argc, const wchar_t **argv)
 static void log_cmdlineA(int argc, const char **argv)
 {
 	FILE *fp = NULL;
-	auto err = fopen_s(&fp, "c:\\Users\\dslat\\squashfuse.log", "w+");
+	auto err = fopen_s(&fp, "c:\\Users\\dslat\\squashfuse.log", "a+");
 	if (fp)
 	{
 		for (int i = 0; i < argc; ++i)

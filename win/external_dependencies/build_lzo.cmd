@@ -13,9 +13,11 @@ if "!CONFIGURATION!"=="ReleaseMT" (
 )
 
 if "%PLATFORM%"=="x64" (
-set "TOOL_SET=Visual Studio 15 2017 Win64" 
+set "TOOL_SET=Visual Studio 17 2022"
+set "PLATFORM_NAME=x64"
 ) else (
-set "TOOL_SET=Visual Studio 15 2017" 
+set "TOOL_SET=Visual Studio 17 2022" 
+set "PLATFORM_NAME=Win32"
 )
 
 if "!CONFIGURATION!"=="ReleaseMT" (
@@ -44,8 +46,10 @@ if errorlevel 1 exit /B 1
 
 
 cmake -G "!TOOL_SET!" ^
+-A "!PLATFORM_NAME!" ^
 -DENABLE_SHARED="ON" ^
 -DENABLE_STATIC="ON" ^
+-DCMAKE_POLICY_VERSION_MINIMUM="3.5" ^
 -DCMAKE_INSTALL_PREFIX="!CMAKE_INSTALL_PREFIX!" ^
 -DCMAKE_INSTALL_LIBDIR="!CMAKE_INSTALL_LIBDIR!" ^
 -DCMAKE_INSTALL_BINDIR="!CMAKE_INSTALL_BINDIR!" ^
