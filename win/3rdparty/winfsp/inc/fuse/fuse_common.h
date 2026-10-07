@@ -6,7 +6,7 @@
  *     FUSE: Filesystem in Userspace
  *     Copyright (C) 2001-2007  Miklos Szeredi <miklos@szeredi.hu>
  *
- * @copyright 2015-2019 Bill Zissimopoulos
+ * @copyright 2015-2025 Bill Zissimopoulos
  */
 /*
  * This file is part of WinFsp.
@@ -54,6 +54,7 @@ extern "C" {
 #define FSP_FUSE_CAP_READDIR_PLUS       (1 << 21)   /* file system supports enhanced readdir */
 #define FSP_FUSE_CAP_READ_ONLY          (1 << 22)   /* file system is marked read-only */
 #define FSP_FUSE_CAP_STAT_EX            (1 << 23)   /* file system supports fuse_stat_ex */
+#define FSP_FUSE_CAP_DELETE_ACCESS      (1 << 24)   /* file system supports access with DELETE_OK */
 #define FSP_FUSE_CAP_CASE_INSENSITIVE   FUSE_CAP_CASE_INSENSITIVE
 
 #define FUSE_IOCTL_COMPAT               (1 << 0)
@@ -78,6 +79,23 @@ extern "C" {
 #if !defined(UF_ARCHIVE)
 #define UF_ARCHIVE                      FSP_FUSE_UF_ARCHIVE
 #endif
+
+/* delete access */
+#define FSP_FUSE_DELETE_OK              0x40000000
+
+/* notify extension */
+#define FSP_FUSE_NOTIFY_MKDIR           0x0001
+#define FSP_FUSE_NOTIFY_RMDIR           0x0002
+#define FSP_FUSE_NOTIFY_CREATE          0x0004
+#define FSP_FUSE_NOTIFY_UNLINK          0x0008
+#define FSP_FUSE_NOTIFY_CHMOD           0x0010
+#define FSP_FUSE_NOTIFY_CHOWN           0x0020
+#define FSP_FUSE_NOTIFY_UTIME           0x0040
+#define FSP_FUSE_NOTIFY_CHFLAGS         0x0080
+#define FSP_FUSE_NOTIFY_TRUNCATE        0x0100
+
+/* getpath extension */
+#define FSP_FUSE_HAS_GETPATH            1
 
 struct fuse_file_info
 {

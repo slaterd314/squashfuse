@@ -6,7 +6,7 @@
  *     FUSE: Filesystem in Userspace
  *     Copyright (C) 2001-2007  Miklos Szeredi <miklos@szeredi.hu>
  *
- * @copyright 2015-2019 Bill Zissimopoulos
+ * @copyright 2015-2025 Bill Zissimopoulos
  */
 /*
  * This file is part of WinFsp.
@@ -79,7 +79,7 @@ struct fuse_operations
     /* S */ int (*fsyncdir)(const char *path, int datasync, struct fuse_file_info *fi);
     /* S */ void *(*init)(struct fuse_conn_info *conn);
     /* S */ void (*destroy)(void *data);
-    /* _ */ int (*access)(const char *path, int mask);
+    /* S */ int (*access)(const char *path, int mask);
     /* S */ int (*create)(const char *path, fuse_mode_t mode, struct fuse_file_info *fi);
     /* S */ int (*ftruncate)(const char *path, fuse_off_t off, struct fuse_file_info *fi);
     /* S */ int (*fgetattr)(const char *path, struct fuse_stat *stbuf, struct fuse_file_info *fi);
@@ -103,8 +103,10 @@ struct fuse_operations
     /* _ */ int (*flock)(const char *path, struct fuse_file_info *, int op);
     /* _ */ int (*fallocate)(const char *path, int mode, fuse_off_t off, fuse_off_t len,
         struct fuse_file_info *fi);
+    /* WinFsp */
+    /* S */ int (*getpath)(const char *path, char *buf, size_t size,
+        struct fuse_file_info *fi);
     /* OSXFUSE */
-    /* _ */ int (*reserved00)();
     /* _ */ int (*reserved01)();
     /* _ */ int (*reserved02)();
     /* _ */ int (*statfs_x)(const char *path, struct fuse_statfs *stbuf);
@@ -152,6 +154,8 @@ FSP_FUSE_API void FSP_FUSE_API_NAME(fsp_fuse_exit)(struct fsp_fuse_env *env,
     struct fuse *f);
 FSP_FUSE_API int FSP_FUSE_API_NAME(fsp_fuse_exited)(struct fsp_fuse_env *env,
     struct fuse *f);
+FSP_FUSE_API int FSP_FUSE_API_NAME(fsp_fuse_notify)(struct fsp_fuse_env *env,
+    struct fuse *f, const char *path, uint32_t action);
 FSP_FUSE_API struct fuse_context *FSP_FUSE_API_NAME(fsp_fuse_get_context)(struct fsp_fuse_env *env);
 
 FSP_FUSE_SYM(
@@ -213,6 +217,13 @@ int fuse_exited(struct fuse *f),
 })
 
 FSP_FUSE_SYM(
+int fuse_notify(struct fuse *f, const char *path, uint32_t action),
+{
+    return FSP_FUSE_API_CALL(fsp_fuse_notify)
+        (fsp_fuse_env(), f, path, action);
+})
+
+FSP_FUSE_SYM(
 struct fuse_context *fuse_get_context(void),
 {
     return FSP_FUSE_API_CALL(fsp_fuse_get_context)
@@ -236,9 +247,8 @@ int fuse_interrupted(void),
 FSP_FUSE_SYM(
 int fuse_invalidate(struct fuse *f, const char *path),
 {
-    (void)f;
-    (void)path;
-    return -EINVAL;
+    return FSP_FUSE_API_CALL(fsp_fuse_notify)
+        (fsp_fuse_env(), f, path, 0);
 })
 
 FSP_FUSE_SYM(

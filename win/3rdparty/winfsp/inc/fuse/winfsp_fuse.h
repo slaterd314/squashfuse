@@ -2,7 +2,7 @@
  * @file fuse/winfsp_fuse.h
  * WinFsp FUSE compatible API.
  *
- * @copyright 2015-2019 Bill Zissimopoulos
+ * @copyright 2015-2025 Bill Zissimopoulos
  */
 /*
  * This file is part of WinFsp.
@@ -27,6 +27,7 @@
 #include <stdint.h>
 #if !defined(WINFSP_DLL_INTERNAL)
 #include <stdlib.h>
+#include <string.h>
 #endif
 
 #ifdef __cplusplus
@@ -360,7 +361,10 @@ static inline int fsp_fuse_set_signal_handlers(void *se)
 
     static sigset_t sigmask;
     static pthread_t sigthr;
-    struct sigaction oldsa, newsa = { 0 };
+    struct sigaction oldsa, newsa;
+
+    // memset instead of initializer to avoid GCC -Wmissing-field-initializers warning
+    memset(&newsa, 0, sizeof newsa);
 
     if (0 != se)
     {

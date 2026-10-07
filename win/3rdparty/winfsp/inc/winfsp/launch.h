@@ -5,7 +5,7 @@
  * In order to use the WinFsp Launch API a program must include &lt;winfsp/launch.h&gt;
  * and link with the winfsp_x64.dll (or winfsp_x86.dll) library.
  *
- * @copyright 2015-2019 Bill Zissimopoulos
+ * @copyright 2015-2025 Bill Zissimopoulos
  */
 /*
  * This file is part of WinFsp.
@@ -32,10 +32,11 @@
 extern "C" {
 #endif
 
-#define FSP_LAUNCH_REGKEY               "Software\\WinFsp\\Services"
-#define FSP_LAUNCH_REGKEY_WOW64         KEY_WOW64_32KEY
+#define FSP_LAUNCH_REGKEY               FSP_FSCTL_PRODUCT_REGKEY "\\Services"
+#define FSP_LAUNCH_REGKEY_WOW64         FSP_FSCTL_PRODUCT_REGKEY_WOW64
+#define FSP_LAUNCH_FULL_REGKEY          FSP_FSCTL_PRODUCT_FULL_REGKEY "\\Services"
 
-#define FSP_LAUNCH_PIPE_NAME            "\\\\.\\pipe\\WinFsp.{14E7137D-22B4-437A-B0C1-D21D1BDF3767}"
+#define FSP_LAUNCH_PIPE_NAME            "\\\\.\\pipe\\" FSP_FSCTL_PRODUCT_NAME ".{14E7137D-22B4-437A-B0C1-D21D1BDF3767}"
 #define FSP_LAUNCH_PIPE_BUFFER_SIZE     4096
 #define FSP_LAUNCH_PIPE_OWNER           ((PSID)WinLocalSystemSid)
 
@@ -287,11 +288,13 @@ typedef struct _FSP_LAUNCH_REG_RECORD
     PWSTR RunAs;
     PWSTR Security;
     PWSTR AuthPackage;
-    PVOID Reserved0[5];
+    PWSTR Stderr;
+    PVOID Reserved0[4];
     ULONG JobControl;
     ULONG Credentials;
     ULONG AuthPackageId;
-    ULONG Reserved1[5];
+    ULONG Recovery;
+    ULONG Reserved1[4];
     UINT8 Buffer[];
 } FSP_LAUNCH_REG_RECORD;
 #pragma warning(pop)

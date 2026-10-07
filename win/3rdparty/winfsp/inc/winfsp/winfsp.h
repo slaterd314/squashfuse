@@ -5,7 +5,7 @@
  * In order to use the WinFsp API the user mode file system must include &lt;winfsp/winfsp.h&gt;
  * and link with the winfsp_x64.dll (or winfsp_x86.dll) library.
  *
- * @copyright 2015-2019 Bill Zissimopoulos
+ * @copyright 2015-2025 Bill Zissimopoulos
  */
 /*
  * This file is part of WinFsp.
@@ -91,6 +91,7 @@ typedef struct _REPARSE_DATA_BUFFER
 #if !defined(FILE_NEED_EA)
 #define FILE_NEED_EA                    0x00000080
 #endif
+#if !defined(__MINGW32__)
 typedef struct _FILE_FULL_EA_INFORMATION
 {
     ULONG NextEntryOffset;
@@ -99,6 +100,7 @@ typedef struct _FILE_FULL_EA_INFORMATION
     USHORT EaValueLength;
     CHAR EaName[1];
 } FILE_FULL_EA_INFORMATION, *PFILE_FULL_EA_INFORMATION;
+#endif
 
 /**
  * @group File System
@@ -365,7 +367,11 @@ typedef struct _FSP_FILE_SYSTEM_INTERFACE
      * tested to see if the delete can proceed and if the answer is positive the file is then
      * deleted during Cleanup.
      *
-     * When this flag is set, this is the last outstanding cleanup for this particular file node.
+     * If the file system supports POSIX unlink (FSP_FSCTL_VOLUME_PARAMS ::
+     * SupportsPosixUnlinkRename), then a Cleanup / FspCleanupDelete operation may arrive while
+     * there are other open file handles for this particular file node. If the file system does not
+     * support POSIX unlink, then a Cleanup / FspCleanupDelete operation will always be the last
+     * outstanding cleanup for this particular file node.
      * </li>
      * <li>FspCleanupSetAllocationSize -
      * The NTFS and FAT file systems reset a file's allocation size when they receive the last
@@ -1039,11 +1045,51 @@ typedef struct _FSP_FILE_SYSTEM_INTERFACE
         PFILE_FULL_EA_INFORMATION Ea, ULONG EaLength,
         FSP_FSCTL_FILE_INFO *FileInfo);
 
+    NTSTATUS (*Obsolete0)(VOID);
+
+    /**
+     * Inform the file system that its dispatcher has been stopped.
+     *
+     * Prior to WinFsp v2.0 the FSD would never unmount a file system volume unless
+     * the user mode file system requested the unmount. Since WinFsp v2.0 it is possible
+     * for the FSD to unmount a file system volume without an explicit user mode file system
+     * request. For example, this happens when the FSD is being uninstalled.
+     *
+     * A user mode file system can use this operation to determine when its dispatcher
+     * has been stopped. The Normally parameter can be used to determine why the dispatcher
+     * was stopped: it is TRUE when the file system is being stopped via
+     * FspFileSystemStopDispatcher and FALSE otherwise.
+     *
+     * When the file system receives a request with Normally == TRUE it need not take any
+     * extra steps. This case is the same as for pre-v2.0 versions: since the file system
+     * stopped the dispatcher via FspFileSystemStopDispatcher, it will likely exit its
+     * process soon.
+     *
+     * When the file system receives a request with Normally == FALSE it may need to take
+     * extra steps to exit its process as this is not done by default.
+     *
+     * A file system that uses the FspService infrastructure may use the
+     * FspFileSystemStopServiceIfNecessary API to correctly handle all cases.
+     *
+     * This operation is the last one that a file system will receive.
+     *
+     * @param FileSystem
+     *     The file system on which this request is posted.
+     * @param Normally
+     *     TRUE if the file system is being stopped via FspFileSystemStopDispatcher.
+     *     FALSE if the file system is being stopped because of another reason such
+     *     as driver unload/uninstall.
+     * @see
+     *     FspFileSystemStopServiceIfNecessary
+     */
+    VOID (*DispatcherStopped)(FSP_FILE_SYSTEM *FileSystem,
+        BOOLEAN Normally);
+
     /*
      * This ensures that this interface will always contain 64 function pointers.
      * Please update when changing the interface as it is important for future compatibility.
      */
-    NTSTATUS (*Reserved[33])();
+    NTSTATUS (*Reserved[31])();
 } FSP_FILE_SYSTEM_INTERFACE;
 FSP_FSCTL_STATIC_ASSERT(sizeof(FSP_FILE_SYSTEM_INTERFACE) == 64 * sizeof(NTSTATUS (*)()),
     "FSP_FILE_SYSTEM_INTERFACE must have 64 entries.");
@@ -1065,7 +1111,14 @@ typedef struct _FSP_FILE_SYSTEM
     FSP_FILE_SYSTEM_OPERATION_GUARD_STRATEGY OpGuardStrategy;
     SRWLOCK OpGuardLock;
     BOOLEAN UmFileContextIsUserContext2, UmFileContextIsFullContext;
+    UINT16 UmNoReparsePointsDirCheck:1;
+    UINT16 UmReservedFlags:14;
+    UINT16 DispatcherStopping:1;
 } FSP_FILE_SYSTEM;
+FSP_FSCTL_STATIC_ASSERT(
+    (4 == sizeof(PVOID) && 660 == sizeof(FSP_FILE_SYSTEM)) ||
+    (8 == sizeof(PVOID) && 792 == sizeof(FSP_FILE_SYSTEM)),
+    "sizeof(FSP_FILE_SYSTEM) must be exactly 660 in 32-bit and 792 in 64-bit.");
 typedef struct _FSP_FILE_SYSTEM_OPERATION_CONTEXT
 {
     FSP_FSCTL_TRANSACT_REQ *Request;
@@ -1094,7 +1147,7 @@ FSP_API NTSTATUS FspFileSystemPreflight(PWSTR DevicePath,
  * @param VolumeParams
  *     Volume parameters for the newly created file system.
  * @param Interface
- *     A pointer to the actual operations that actually implement this user mode file system.
+ *     A pointer to the operations that implement this user mode file system.
  * @param PFileSystem [out]
  *     Pointer that will receive the file system object created on successful return from this
  *     call.
@@ -1187,6 +1240,72 @@ FSP_API VOID FspFileSystemStopDispatcher(FSP_FILE_SYSTEM *FileSystem);
 FSP_API VOID FspFileSystemSendResponse(FSP_FILE_SYSTEM *FileSystem,
     FSP_FSCTL_TRANSACT_RSP *Response);
 /**
+ * Begin notifying Windows that the file system has file changes.
+ *
+ * A file system that wishes to notify Windows about file changes must
+ * first issue an FspFileSystemBegin call, followed by 0 or more
+ * FspFileSystemNotify calls, followed by an FspFileSystemNotifyEnd call.
+ *
+ * This operation blocks concurrent file rename operations. File rename
+ * operations may interfere with file notification, because a file being
+ * notified may also be concurrently renamed. After all file change
+ * notifications have been issued, you must make sure to call
+ * FspFileSystemNotifyEnd to allow file rename operations to proceed.
+ *
+ * @param FileSystem
+ *     The file system object.
+ * @return
+ *     STATUS_SUCCESS or error code. The error code STATUS_CANT_WAIT means that
+ *     a file rename operation is currently in progress and the operation must be
+ *     retried at a later time.
+ */
+FSP_API NTSTATUS FspFileSystemNotifyBegin(FSP_FILE_SYSTEM *FileSystem, ULONG Timeout);
+/**
+ * End notifying Windows that the file system has file changes.
+ *
+ * A file system that wishes to notify Windows about file changes must
+ * first issue an FspFileSystemBegin call, followed by 0 or more
+ * FspFileSystemNotify calls, followed by an FspFileSystemNotifyEnd call.
+ *
+ * This operation allows any blocked file rename operations to proceed.
+ *
+ * @param FileSystem
+ *     The file system object.
+ * @return
+ *     STATUS_SUCCESS or error code.
+ */
+FSP_API NTSTATUS FspFileSystemNotifyEnd(FSP_FILE_SYSTEM *FileSystem);
+/**
+ * Notify Windows that the file system has file changes.
+ *
+ * A file system that wishes to notify Windows about file changes must
+ * first issue an FspFileSystemBegin call, followed by 0 or more
+ * FspFileSystemNotify calls, followed by an FspFileSystemNotifyEnd call.
+ *
+ * Note that FspFileSystemNotify requires file names to be normalized. A
+ * normalized file name is one that contains the correct case of all characters
+ * in the file name.
+ *
+ * For case-sensitive file systems all file names are normalized by definition.
+ * For case-insensitive file systems that implement file name normalization,
+ * a normalized file name is the one that the file system specifies in the
+ * response to Create or Open (see also FspFileSystemGetOpenFileInfo). For
+ * case-insensitive file systems that do not implement file name normalization
+ * a normalized file name is the upper case version of the file name used
+ * to open the file.
+ *
+ * @param FileSystem
+ *     The file system object.
+ * @param NotifyInfo
+ *     Buffer containing information about file changes.
+ * @param Size
+ *     Size of buffer.
+ * @return
+ *     STATUS_SUCCESS or error code.
+ */
+FSP_API NTSTATUS FspFileSystemNotify(FSP_FILE_SYSTEM *FileSystem,
+    FSP_FSCTL_NOTIFY_INFO *NotifyInfo, SIZE_T Size);
+/**
  * Get the current operation context.
  *
  * This function may be used only when servicing one of the FSP_FILE_SYSTEM_INTERFACE operations.
@@ -1268,9 +1387,7 @@ static inline
 VOID FspFileSystemGetDispatcherResult(FSP_FILE_SYSTEM *FileSystem,
     NTSTATUS *PDispatcherResult)
 {
-    /* 32-bit reads are atomic */
-    *PDispatcherResult = FileSystem->DispatcherResult;
-    MemoryBarrier();
+    *PDispatcherResult = FspInterlockedLoad32((INT32 *)&FileSystem->DispatcherResult);
 }
 FSP_API VOID FspFileSystemGetDispatcherResultF(FSP_FILE_SYSTEM *FileSystem,
     NTSTATUS *PDispatcherResult);
@@ -1315,7 +1432,8 @@ UINT32 FspFileSystemOperationProcessId(VOID)
     case FspFsctlTransactCreateKind:
         return FSP_FSCTL_TRANSACT_REQ_TOKEN_PID(Request->Req.Create.AccessToken);
     case FspFsctlTransactSetInformationKind:
-        if (10/*FileRenameInformation*/ == Request->Req.SetInformation.FileInformationClass)
+        if (10/*FileRenameInformation*/ == Request->Req.SetInformation.FileInformationClass ||
+            65/*FileRenameInformationEx*/ == Request->Req.SetInformation.FileInformationClass)
             return FSP_FSCTL_TRANSACT_REQ_TOKEN_PID(Request->Req.SetInformation.Info.Rename.AccessToken);
         /* fall through! */
     default:
@@ -1645,10 +1763,51 @@ UINT32 FspFileSystemGetEaPackedSize(PFILE_FULL_EA_INFORMATION SingleEa)
     /* magic computations are courtesy of NTFS */
     return 5 + SingleEa->EaNameLength + SingleEa->EaValueLength;
 }
+/**
+ * Add notify information to a buffer.
+ *
+ * This is a helper for filling a buffer to use with FspFileSystemNotify.
+ *
+ * @param NotifyInfo
+ *     The notify information to add.
+ * @param Buffer
+ *     Pointer to a buffer that will receive the notify information.
+ * @param Length
+ *     Length of buffer.
+ * @param PBytesTransferred [out]
+ *     Pointer to a memory location that will receive the actual number of bytes stored. This should
+ *     be initialized to 0 prior to the first call to FspFileSystemAddNotifyInfo for a particular
+ *     buffer.
+ * @return
+ *     TRUE if the notify information was added, FALSE if there was not enough space to add it.
+ * @see
+ *     FspFileSystemNotify
+ */
+FSP_API BOOLEAN FspFileSystemAddNotifyInfo(FSP_FSCTL_NOTIFY_INFO *NotifyInfo,
+    PVOID Buffer, ULONG Length, PULONG PBytesTransferred);
+/**
+ * Stop a file system service, if any.
+ *
+ * This is a helper for implementing the DispatcherStopped operation, but only for file systems
+ * that use the FspService infrastructure.
+ *
+ * @param FileSystem
+ *     The file system object.
+ * @param Normally
+ *     TRUE if the file system is being stopped via FspFileSystemStopDispatcher.
+ *     FALSE if the file system is being stopped because of another reason such
+ *     as driver unload/uninstall.
+ * @see
+ *     DispatcherStopped
+ */
+FSP_API VOID FspFileSystemStopServiceIfNecessary(FSP_FILE_SYSTEM *FileSystem,
+    BOOLEAN Normally);
 
 /*
  * Directory buffering
  */
+FSP_API BOOLEAN FspFileSystemAcquireDirectoryBufferEx(PVOID* PDirBuffer,
+    BOOLEAN Reset, ULONG CapacityHint, PNTSTATUS PResult);
 FSP_API BOOLEAN FspFileSystemAcquireDirectoryBuffer(PVOID *PDirBuffer,
     BOOLEAN Reset, PNTSTATUS PResult);
 FSP_API BOOLEAN FspFileSystemFillDirectoryBuffer(PVOID *PDirBuffer,
@@ -1732,11 +1891,16 @@ NTSTATUS FspAccessCheck(FSP_FILE_SYSTEM *FileSystem,
 /*
  * POSIX Interop
  */
+FSP_API NTSTATUS FspPosixSetUidMap(UINT32 Uid[], PSID Sid[], ULONG Count);
 FSP_API NTSTATUS FspPosixMapUidToSid(UINT32 Uid, PSID *PSid);
 FSP_API NTSTATUS FspPosixMapSidToUid(PSID Sid, PUINT32 PUid);
 FSP_API VOID FspDeleteSid(PSID Sid, NTSTATUS (*CreateFunc)());
 FSP_API NTSTATUS FspPosixMapPermissionsToSecurityDescriptor(
     UINT32 Uid, UINT32 Gid, UINT32 Mode,
+    PSECURITY_DESCRIPTOR *PSecurityDescriptor);
+FSP_API NTSTATUS FspPosixMergePermissionsToSecurityDescriptor(
+    UINT32 Uid, UINT32 Gid, UINT32 Mode,
+    PSECURITY_DESCRIPTOR ExistingSecurityDescriptor,
     PSECURITY_DESCRIPTOR *PSecurityDescriptor);
 FSP_API NTSTATUS FspPosixMapSecurityDescriptorToPermissions(
     PSECURITY_DESCRIPTOR SecurityDescriptor,
@@ -1935,6 +2099,8 @@ FSP_API ULONG FspServiceGetExitCode(FSP_SERVICE *Service);
  * to connect the service process to the Service Control Manager. If the Service Control Manager is
  * not available (and console mode is allowed) it will enter console mode.
  *
+ * This function should be called once per process.
+ *
  * @param Service
  *     The service object.
  * @return
@@ -2012,6 +2178,7 @@ FSP_API NTSTATUS FspCallNamedPipeSecurelyEx(PWSTR PipeName,
     PULONG PBytesTransferred, ULONG Timeout, BOOLEAN AllowImpersonation,
     PSID Sid);
 FSP_API NTSTATUS FspVersion(PUINT32 PVersion);
+FSP_API PWSTR FspSxsIdent(VOID);
 
 /*
  * Delay load
@@ -2019,11 +2186,7 @@ FSP_API NTSTATUS FspVersion(PUINT32 PVersion);
 static inline
 NTSTATUS FspLoad(PVOID *PModule)
 {
-#if defined(_WIN64)
-#define FSP_DLLNAME                     "winfsp-x64.dll"
-#else
-#define FSP_DLLNAME                     "winfsp-x86.dll"
-#endif
+#define FSP_DLLNAME                     FSP_FSCTL_PRODUCT_FILE_NAME "-" FSP_FSCTL_PRODUCT_FILE_ARCH ".dll"
 #define FSP_DLLPATH                     "bin\\" FSP_DLLNAME
 
     WINADVAPI
@@ -2040,7 +2203,6 @@ NTSTATUS FspLoad(PVOID *PModule)
 
     WCHAR PathBuf[MAX_PATH];
     DWORD Size;
-    HKEY RegKey;
     LONG Result;
     HMODULE Module;
 
@@ -2050,15 +2212,9 @@ NTSTATUS FspLoad(PVOID *PModule)
     Module = LoadLibraryW(L"" FSP_DLLNAME);
     if (0 == Module)
     {
-        Result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Software\\WinFsp",
-            0, KEY_READ | KEY_WOW64_32KEY, &RegKey);
-        if (ERROR_SUCCESS == Result)
-        {
-            Size = sizeof PathBuf - sizeof L"" FSP_DLLPATH + sizeof(WCHAR);
-            Result = RegGetValueW(RegKey, 0, L"InstallDir",
-                RRF_RT_REG_SZ, 0, PathBuf, &Size);
-            RegCloseKey(RegKey);
-        }
+        Size = sizeof PathBuf - sizeof L"" FSP_DLLPATH + sizeof(WCHAR);
+        Result = RegGetValueW(HKEY_LOCAL_MACHINE, L"" FSP_FSCTL_PRODUCT_FULL_REGKEY, L"InstallDir",
+            RRF_RT_REG_SZ, 0, PathBuf, &Size);
         if (ERROR_SUCCESS != Result)
             return STATUS_OBJECT_NAME_NOT_FOUND;
 
@@ -2073,8 +2229,8 @@ NTSTATUS FspLoad(PVOID *PModule)
 
     return STATUS_SUCCESS;
 
-#undef FSP_DLLNAME
 #undef FSP_DLLPATH
+#undef FSP_DLLNAME
 }
 
 #ifdef __cplusplus
