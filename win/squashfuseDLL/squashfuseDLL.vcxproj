@@ -441,7 +441,6 @@
     <ClInclude Include="..\..\fuseprivate.h" />
     <ClInclude Include="..\..\hash.h" />
     <ClInclude Include="..\..\ll.h" />
-    <ClInclude Include="..\..\mutex.h" />
     <ClInclude Include="..\..\nonstd-internal.h" />
     <ClInclude Include="..\..\nonstd.h" />
     <ClInclude Include="..\..\squashfs_fs.h" />
@@ -485,7 +484,6 @@
     <ClCompile Include="..\..\util.c" />
     <ClCompile Include="..\..\xattr.c" />
     <ClCompile Include="..\pthread_stub.c" />
-    <ClCompile Include="..\WinMutex.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

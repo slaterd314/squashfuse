@@ -345,7 +345,6 @@ int main(int argc, char *argv[]) {
 	sqfs_hl *hl;
 	int ret;
 	
-
 	struct fuse_opt fuse_opts[] = {
 		{"offset=%zu", offsetof(sqfs_opts, offset), 0},
 		{"subdir=%s", offsetof(sqfs_opts, subdir), 0},

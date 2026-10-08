@@ -45,9 +45,9 @@
 	typedef int sqfs_fd_t;
 
 # define atomic_inc_relaxed(ptr) \
-	__atomic_add_fetch(&block->refcount, 1, __ATOMIC_RELAXED)
+	__atomic_add_fetch(ptr, 1, __ATOMIC_RELAXED)
 # define atomic_dec_acqrel(ptr) \
-	__atomic_sub_fetch(&block->refcount, 1, __ATOMIC_ACQ_REL)
+	__atomic_sub_fetch(ptr, 1, __ATOMIC_ACQ_REL)
 
 #endif
 

@@ -54,7 +54,6 @@ typedef struct {
 	int mountpoint;
 	size_t offset;
 	unsigned int idle_timeout_secs;
-	int have_unc_path;
 	int uid;
 	int gid;
 	const char *notify_pipe;

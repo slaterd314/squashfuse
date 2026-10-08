@@ -27,11 +27,16 @@
 #ifdef _WIN32
 	#include "win32.h"
 
-	ssize_t sqfs_pread(HANDLE file, void *buf, size_t count, sqfs_off_t off) {
+	ssize_t sqfs_pread(sqfs_fd_t fd, void *buf, size_t count, sqfs_off_t off) {
 		DWORD bread;
 		OVERLAPPED ov = { 0 };
 		ov.Offset = (DWORD)off;
 		ov.OffsetHigh = (DWORD)(off >> 32);
+
+		HANDLE file = (HANDLE)_get_osfhandle(fd);
+
+		if( file == INVALID_HANDLE_VALUE )
+			return -1;
 
 		if (ReadFile(file, buf, (DWORD)count, &bread, &ov) == FALSE)
 			return -1;

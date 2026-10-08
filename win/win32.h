@@ -95,7 +95,7 @@ extern "C" {
 	typedef uint32_t sqfs_id_t; /* Internal uids/gids are 32-bits */
 	typedef intptr_t ssize_t;
 	typedef DWORD64 sqfs_off_t;
-	typedef HANDLE sqfs_fd_t;
+	typedef int sqfs_fd_t;
 	typedef unsigned uid_t;
 
 	unsigned short sqfs_inode_mode_to_stat_mode(uint32_t mode);

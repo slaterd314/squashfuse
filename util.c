@@ -28,12 +28,24 @@
 
 #include <stdio.h>
 
-#ifdef _WIN32
+#if defined(_WIN32)
 	#include <win32.h>
+	#include <fcntl.h>
+	#include <io.h>
 	
 	sqfs_err sqfs_fd_open(const char *path, sqfs_fd_t *fd, bool print) {
-		*fd = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		if (*fd != INVALID_HANDLE_VALUE)
+		sqfs_fd_t new_fd = -1;
+		HANDLE hFile = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (hFile != INVALID_HANDLE_VALUE)
+		{
+			new_fd = (sqfs_fd_t)_open_osfhandle((intptr_t)hFile, _O_RDONLY|_O_BINARY);
+			if (-1 == new_fd)
+			{
+				CloseHandle(hFile);
+			}
+		}
+		*fd = new_fd;
+		if (new_fd != INVALID_HANDLE_VALUE)
 			return SQFS_OK;
 
 		// FIXME: Better error handling
@@ -43,7 +55,7 @@
 	}
 
 	void sqfs_fd_close(sqfs_fd_t fd) {
-		CloseHandle(fd);
+		_close(fd);
 	}
 #else
 	#include <fcntl.h>

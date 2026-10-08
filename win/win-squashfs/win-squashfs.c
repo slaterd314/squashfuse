@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Daniel R. Slater <dslater38@gmail.com>
+ * Copyright (c) 2020 Daniel R. Slater <6516534+slaterd314@users.noreply.github.com>
  * All rights reserved.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR(S) ``AS IS'' AND ANY EXPRESS OR

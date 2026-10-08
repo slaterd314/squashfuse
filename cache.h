@@ -27,10 +27,6 @@
 
 #include "common.h"
 
-#ifdef CACHE_THREAD
-#include "../mutex.h"
-#endif
-
 /* Really simplistic cache
  *  - Linear search
  *  - Linear eviction

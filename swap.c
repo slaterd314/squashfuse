@@ -37,41 +37,6 @@
 		*v = r; \
 	}
 
-/*
-void sqfs_swapin16(uint16_t *v) {
-		int i;
-		uint8_t *c = (uint8_t*)v;
-		uint16_t r = 0;
-		for (i = sizeof(*v) - 1; i >= 0; --i) {
-			r <<= 8;
-			r += c[i];
-		}
-		*v = r;
-}
-
-void sqfs_swapin32(uint32_t *v) {
-	int i;
-	uint8_t *c = (uint8_t*)v;
-	uint32_t r = 0;
-	for (i = sizeof(*v) - 1; i >= 0; --i) {
-		r <<= 8;
-		r += c[i];
-	}
-	*v = r;
-}
-
-void sqfs_swapin64(uint64_t *v) {
-	int i;
-	uint8_t *c = (uint8_t*)v;
-	uint64_t r = 0;
-	for (i = sizeof(*v) - 1; i >= 0; --i) {
-		r <<= 8;
-		r += c[i];
-	}
-	*v = r;
-}
-*/
-
 SWAP(16)
 SWAP(32)
 SWAP(64)
