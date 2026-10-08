@@ -452,6 +452,8 @@
     <ClInclude Include="..\..\traverse.h" />
     <ClInclude Include="..\..\util.h" />
     <ClInclude Include="..\..\xattr.h" />
+    <ClInclude Include="..\pthread.h" />
+    <ClInclude Include="..\unistd.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -465,6 +467,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\cache.c" />
+    <ClCompile Include="..\..\cache_mt.c" />
     <ClCompile Include="..\..\decompress.c" />
     <ClCompile Include="..\..\dir.c" />
     <ClCompile Include="..\..\file.c" />
@@ -481,6 +484,7 @@
     <ClCompile Include="..\..\traverse.c" />
     <ClCompile Include="..\..\util.c" />
     <ClCompile Include="..\..\xattr.c" />
+    <ClCompile Include="..\pthread_stub.c" />
     <ClCompile Include="..\WinMutex.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -30,6 +30,6 @@
 #include <sys/stat.h>
 
 /* Fill in a stat structure. Does not set st_ino */
-sqfs_err sqfs_stat(sqfs *fs, sqfs_inode *inode, struct stat *st);
+sqfs_err sqfs_stat(sqfs *fs, sqfs_inode *inode, struct fuse_stat *st);
 
 #endif

@@ -110,26 +110,15 @@ int sqfs_usage(char *progname, bool fuse_usage, bool ll_usage) {
 	fprintf(stderr, "%s (c) 2012 Dave Vasilevsky\n\n", PACKAGE_STRING);
 	fprintf(stderr, "Usage: %s [options] ARCHIVE MOUNTPOINT\n",
 		progname ? progname : PACKAGE_NAME);
-// <<<<<<< HEAD
-	if (fuse_usage) {
-		struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
-		fuse_opt_add_arg(&args, ""); /* progname */
-		fuse_opt_add_arg(&args, "-ho");
-		fprintf(stderr, "\n");
-		/* fuse_parse_cmdline(&args, NULL, NULL, NULL); */
-		fuse_parse_cmdline(&args, NULL);
-		sqfs_print_compression_info();
-//=======
-//	fprintf(stderr, "\n%s options:\n", progname);
-//	fprintf(stderr, "    -o offset=N            offset N bytes into ARCHIVE to mount\n");
-//	fprintf(stderr, "    -o subdir=PATH         mount subdirectory PATH of ARCHIVE\n");
-//	fprintf(stderr, "    -o notify_pipe=PATH    named pipe that will receive 's' (success)\n"
-//			"                           or 'f' (failure) when the mountpoint is ready\n");
-//	if (ll_usage) {
-//		fprintf(stderr, "    -o timeout=N           idle N seconds for automatic unmount\n");
-//		fprintf(stderr, "    -o uid=N               set file owner to uid N\n");
-//		fprintf(stderr, "    -o gid=N               set file group to gid N\n");
-// >>>>>>> 1a211e20fff55e9ce4c74ad03f0aa26a7b760bd3
+	fprintf(stderr, "\n%s options:\n", progname);
+	fprintf(stderr, "    -o offset=N            offset N bytes into ARCHIVE to mount\n");
+	fprintf(stderr, "    -o subdir=PATH         mount subdirectory PATH of ARCHIVE\n");
+	fprintf(stderr, "    -o notify_pipe=PATH    named pipe that will receive 's' (success)\n"
+			"                           or 'f' (failure) when the mountpoint is ready\n");
+	if (ll_usage) {
+		fprintf(stderr, "    -o timeout=N           idle N seconds for automatic unmount\n");
+		fprintf(stderr, "    -o uid=N               set file owner to uid N\n");
+		fprintf(stderr, "    -o gid=N               set file group to gid N\n");
 	}
 
 	if (fuse_usage) {
@@ -183,7 +172,7 @@ int sqfs_opt_proc(void *data, const char *arg, int key,
 	return 1; /* Keep */
 }
 
-int sqfs_statfs(sqfs *sq, struct statvfs *st) {
+int sqfs_statfs(sqfs *sq, struct fuse_statvfs *st) {
 	struct squashfs_super_block *sb = &sq->sb;
 
 	st->f_bsize = sb->block_size;

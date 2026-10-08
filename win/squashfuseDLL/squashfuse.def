@@ -74,5 +74,11 @@ EXPORTS
 	sqfs_print_compression_info
     sqfs_open_image_with_subdir
     sqfs_statfs
+    sqfs_cache_entry_valid
+    sqfs_cache_init
+    sqfs_cache_get
+    sqfs_cache_entry_mark_valid
+    sqfs_cache_put
+    sqfs_cache_destroy
     notify_mount_ready
     notify_mount_ready_async

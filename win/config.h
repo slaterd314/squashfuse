@@ -144,3 +144,6 @@
 
 /* POSIX 2001 compatibility */
 #define _POSIX_C_SOURCE 200112L
+
+/* Enable multi-threaded low-level FUSE driver */
+#define SQFS_MULTITHREADED 1
