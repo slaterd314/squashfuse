@@ -10,3 +10,4 @@
 *.deleteme
 swap.c.inc
 swap.h.inc
+vcpkg_installed 

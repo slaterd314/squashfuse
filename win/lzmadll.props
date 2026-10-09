@@ -9,7 +9,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDIr)..\3rdparty\lzma\windows\vs2017\$(Configuration)\$(Platform)\liblzma_dll;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>liblzma_dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lzma.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />

@@ -8,6 +8,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>squashfs_win</OutputName>
     <OutputType>Package</OutputType>
+    <SuppressIces>ICE61</SuppressIces>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>$(SolutionDir)installer\$(Platform)\$(Configuration)\</OutputPath>
@@ -64,6 +65,7 @@
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Bin.wxs" />
     <Compile Include="Product.wxs" />
     <Compile Include="root.wxs" />
   </ItemGroup>

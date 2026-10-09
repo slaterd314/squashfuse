@@ -144,7 +144,13 @@ extern "C"
 		return NULL;
 	}
 
-	/* TODO: make a version of this that works correctly with directories*/
+	/* 
+	* On Windows, we need to pass in the sqfs *fs filesystem so we can determine if the 
+	* target is a directory or not, so we can set the SYMBOLIC_LINK_FLAG_DIRECTORY flag when 
+	* creating the symlink. 
+	* squashfuse_extract uses this function to create symlinks when extracting files from the squashfs image.
+	* and the symbolic links can be extracted before the target is created.
+	*/
 	int sqfs_symlink(sqfs *fs, const char *path1, const char *path2)
 	{
 		sqfs_inode inode = { 0 };

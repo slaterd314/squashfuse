@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "liblzma",
+    "lz4",
+    "lzo",
+    "zstd",
+    "zlib"
+  ]
+}

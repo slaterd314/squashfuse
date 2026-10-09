@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.37628.2 d17.14
+VisualStudioVersion = 17.14.37628.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "squashfuse_ls", "squashfuse_ls\squashfuse_ls.vcxproj", "{45D30A63-AAB9-4A37-976D-E0DBE1972431}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -14,9 +14,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "squashfuse_extract", "squas
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "squashfuseDLL", "squashfuseDLL\squashfuseDLL.vcxproj", "{19949FC9-5879-49CF-9FBB-1E833E96A20E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{4A94847F-8858-405C-AD8A-85D7824FBE50} = {4A94847F-8858-405C-AD8A-85D7824FBE50}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "squashfuse", "win-squashfs\win-squashfs.vcxproj", "{F1D5B01E-2897-421B-8257-84751FE9ABB1}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -29,8 +26,6 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "squashfs-win", "squashfs-wi
 		{45D30A63-AAB9-4A37-976D-E0DBE1972431} = {45D30A63-AAB9-4A37-976D-E0DBE1972431}
 		{E9250E5B-D78C-433A-A4F9-D8CFFFA9B7E7} = {E9250E5B-D78C-433A-A4F9-D8CFFFA9B7E7}
 	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "external_dependencies", "external_dependencies\external_dependencies.vcxproj", "{4A94847F-8858-405C-AD8A-85D7824FBE50}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -124,22 +119,6 @@ Global
 		{2F7D44FE-CE75-479A-8746-4BE0FE4535AA}.ReleaseMT|Win32.Build.0 = ReleaseMT|x86
 		{2F7D44FE-CE75-479A-8746-4BE0FE4535AA}.ReleaseMT|x64.ActiveCfg = ReleaseMT|x64
 		{2F7D44FE-CE75-479A-8746-4BE0FE4535AA}.ReleaseMT|x64.Build.0 = ReleaseMT|x64
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.Debug|Win32.ActiveCfg = Debug|Win32
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.Debug|Win32.Build.0 = Debug|Win32
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.Debug|x64.ActiveCfg = Debug|x64
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.Debug|x64.Build.0 = Debug|x64
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.Release|Win32.ActiveCfg = Release|Win32
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.Release|Win32.Build.0 = Release|Win32
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.Release|x64.ActiveCfg = Release|x64
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.Release|x64.Build.0 = Release|x64
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.ReleaseClang-Static|Win32.ActiveCfg = ReleaseMT|Win32
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.ReleaseClang-Static|Win32.Build.0 = ReleaseMT|Win32
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.ReleaseClang-Static|x64.ActiveCfg = ReleaseMT|x64
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.ReleaseClang-Static|x64.Build.0 = ReleaseMT|x64
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.ReleaseMT|Win32.ActiveCfg = ReleaseMT|Win32
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.ReleaseMT|Win32.Build.0 = ReleaseMT|Win32
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.ReleaseMT|x64.ActiveCfg = ReleaseMT|x64
-		{4A94847F-8858-405C-AD8A-85D7824FBE50}.ReleaseMT|x64.Build.0 = ReleaseMT|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Fragment>
     <DirectoryRef Id="BINDIR">
@@ -15,11 +15,11 @@
       </Component>
       <?if $(var.Static) = 0?>
       <Component Id="dynamic_libs" Guid="{6A5567CE-B8CA-4C48-8082-C04BC8A9547E}">
-        <File Id="liblz4.dll" KeyPath="yes" Source="$(var.LibDir)\liblz4.dll" />
-        <File Id="liblzma.dll" KeyPath="no" Source="$(var.LibDir)\liblzma.dll" />
-        <File Id="libzstd.dll" KeyPath="no" Source="$(var.LibDir)\libzstd.dll" />
-        <File Id="lzo2.dll" KeyPath="no" Source="$(var.LibDir)\lzo2.dll" />
-        <File Id="zlibwapi.dll" KeyPath="no" Source="$(var.LibDir)\zlibwapi.dll" />
+        <File Id="lz4.dll" KeyPath="yes" Source="$(var.SourceDir)\lz4.dll" />
+        <File Id="liblzma.dll" KeyPath="no" Source="$(var.SourceDir)\liblzma.dll" />
+        <File Id="libzstd.dll" KeyPath="no" Source="$(var.SourceDir)\zstd.dll" />
+        <File Id="lzo2.dll" KeyPath="no" Source="$(var.SourceDir)\lzo2.dll" />
+        <File Id="zlibwapi.dll" KeyPath="no" Source="$(var.SourceDir)\zlib1.dll" />
       </Component>
       <?endif?>
 

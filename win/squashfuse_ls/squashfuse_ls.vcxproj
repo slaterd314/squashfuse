@@ -243,6 +243,9 @@
     <UseLlvmLib>false</UseLlvmLib>
     <ClangClAdditionalOptions>-Xclang -std=c11</ClangClAdditionalOptions>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>

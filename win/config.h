@@ -147,3 +147,7 @@
 
 /* Enable multi-threaded low-level FUSE driver */
 #define SQFS_MULTITHREADED 1
+
+/* This decl is missing from WinFSP fuse3 headers, although the function is exported.  */
+int fuse_parse_cmdline(struct fuse_args* args,
+    char** mountpoint, int* multithreaded, int* foreground);

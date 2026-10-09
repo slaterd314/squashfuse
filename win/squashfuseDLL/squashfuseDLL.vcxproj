@@ -238,6 +238,9 @@
     <UseLldLink>false</UseLldLink>
     <UseLlvmLib>false</UseLlvmLib>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -451,6 +454,7 @@
     <ClInclude Include="..\..\traverse.h" />
     <ClInclude Include="..\..\util.h" />
     <ClInclude Include="..\..\xattr.h" />
+    <ClInclude Include="..\config.h" />
     <ClInclude Include="..\pthread.h" />
     <ClInclude Include="..\unistd.h" />
     <ClInclude Include="resource.h" />
