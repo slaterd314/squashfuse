@@ -22,15 +22,25 @@
     <Fragment>
         <DirectoryRef Id="dir614B99936005B9F3A6F53A2AB8647873">
             <Component Id="cmp9E5C8B87C4336078C77F97D482E8A846" Guid="{E01DD731-39D9-4F44-BE96-D0AEC928DDA0}">
-                <File Id="fil5344F401E721D0EE1C451B4152B07524" KeyPath="yes" Source="$(var.SourceDir)\zlib1.dll" />
-            </Component>
+				<?ifndef Debug ?>
+                    <File Id="fil5344F401E721D0EE1C451B4152B07524" KeyPath="yes" Source="$(var.SourceDir)\zlib1.dll" />
+				<?endif ?>
+				<?ifdef Debug ?>
+				<File Id="fil5344F401E721D0EE1C451B4152B07524" KeyPath="yes" Source="$(var.SourceDir)\zlib1d.dll" />
+				<?endif ?>
+			</Component>
         </DirectoryRef>
     </Fragment>
     <Fragment>
         <DirectoryRef Id="dir614B99936005B9F3A6F53A2AB8647873">
             <Component Id="cmpBE91E3D1DCF5D7D14B63B03C999167FF" Guid="{6D0CA516-AC45-448C-800B-45A3027202B0}">
-                <File Id="fil800B4BB641418C768293FF385F77ABA5" KeyPath="yes" Source="$(var.SourceDir)\lz4.dll" />
-            </Component>
+				<?ifndef Debug ?>
+                    <File Id="fil800B4BB641418C768293FF385F77ABA5" KeyPath="yes" Source="$(var.SourceDir)\lz4.dll" />
+				<?endif ?>
+				<?ifdef Debug ?>
+				<File Id="fil800B4BB641418C768293FF385F77ABA5" KeyPath="yes" Source="$(var.SourceDir)\lz4d.dll" />
+				<?endif ?>
+			</Component>
         </DirectoryRef>
     </Fragment>
     <Fragment>

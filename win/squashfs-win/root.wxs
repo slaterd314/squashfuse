@@ -15,12 +15,22 @@
       </Component>
       <?if $(var.Static) = 0?>
       <Component Id="dynamic_libs" Guid="{6A5567CE-B8CA-4C48-8082-C04BC8A9547E}">
-        <File Id="lz4.dll" KeyPath="yes" Source="$(var.SourceDir)\lz4.dll" />
+		<?ifndef Debug ?>
+            <File Id="lz4.dll" KeyPath="yes" Source="$(var.SourceDir)\lz4.dll" />
+		<?endif ?>
+		<?ifdef Debug ?>
+		  <File Id="lz4.dll" KeyPath="yes" Source="$(var.SourceDir)\lz4d.dll" />
+		<?endif ?>
         <File Id="liblzma.dll" KeyPath="no" Source="$(var.SourceDir)\liblzma.dll" />
         <File Id="libzstd.dll" KeyPath="no" Source="$(var.SourceDir)\zstd.dll" />
         <File Id="lzo2.dll" KeyPath="no" Source="$(var.SourceDir)\lzo2.dll" />
-        <File Id="zlibwapi.dll" KeyPath="no" Source="$(var.SourceDir)\zlib1.dll" />
-      </Component>
+		<?ifndef Debug ?>
+            <File Id="zlibwapi.dll" KeyPath="no" Source="$(var.SourceDir)\zlib1.dll" />
+		<?endif ?>
+		<?ifndef Debug ?>
+		    <File Id="zlibwapi.dll" KeyPath="no" Source="$(var.SourceDir)\zlib1d.dll" />
+        <?endif ?>
+	  </Component>
       <?endif?>
 
     </DirectoryRef>

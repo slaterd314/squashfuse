@@ -101,89 +101,35 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\zlibdll.props" />
-    <Import Project="..\zstddll.props" />
-    <Import Project="..\lz4dll.props" />
-    <Import Project="..\lzmadll.props" />
-    <Import Project="..\lzodll.props" />
     <Import Project="..\x86Fuse.props" />
-    <Import Project="..\externalDeps.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\zlibdll.props" />
-    <Import Project="..\zstddll.props" />
-    <Import Project="..\lz4dll.props" />
-    <Import Project="..\lzmadll.props" />
-    <Import Project="..\lzodll.props" />
     <Import Project="..\x86Fuse.props" />
-    <Import Project="..\zlibRelease.props" />
-    <Import Project="..\externalDeps.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\zlibstat.props" />
-    <Import Project="..\zstdstat.props" />
-    <Import Project="..\lz4stat.props" />
-    <Import Project="..\lzmastat.props" />
-    <Import Project="..\lzostat.props" />
     <Import Project="..\x86Fuse.props" />
-    <Import Project="..\zlibRelease.props" />
-    <Import Project="..\externalDeps.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseClang-Static|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\zlibstat.props" />
-    <Import Project="..\zstdstat.props" />
-    <Import Project="..\lz4stat.props" />
-    <Import Project="..\lzmastat.props" />
-    <Import Project="..\lzostat.props" />
     <Import Project="..\x86Fuse.props" />
-    <Import Project="..\zlibRelease.props" />
-    <Import Project="..\externalDeps.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\zlibdll.props" />
-    <Import Project="..\zstddll.props" />
-    <Import Project="..\lz4dll.props" />
-    <Import Project="..\lzmadll.props" />
-    <Import Project="..\lzodll.props" />
     <Import Project="..\x64Fuse.props" />
-    <Import Project="..\externalDeps.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\zlibdll.props" />
-    <Import Project="..\zstddll.props" />
-    <Import Project="..\lz4dll.props" />
-    <Import Project="..\lzmadll.props" />
-    <Import Project="..\lzodll.props" />
     <Import Project="..\x64Fuse.props" />
-    <Import Project="..\zlibRelease.props" />
-    <Import Project="..\externalDeps.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\zlibstat.props" />
-    <Import Project="..\zstdstat.props" />
-    <Import Project="..\lz4stat.props" />
-    <Import Project="..\lzmastat.props" />
-    <Import Project="..\lzostat.props" />
     <Import Project="..\x64Fuse.props" />
-    <Import Project="..\zlibRelease.props" />
-    <Import Project="..\externalDeps.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseClang-Static|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\zlibstat.props" />
-    <Import Project="..\zstdstat.props" />
-    <Import Project="..\lz4stat.props" />
-    <Import Project="..\lzmastat.props" />
-    <Import Project="..\lzostat.props" />
     <Import Project="..\x64Fuse.props" />
-    <Import Project="..\zlibRelease.props" />
-    <Import Project="..\externalDeps.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
