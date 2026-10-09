@@ -35,6 +35,6 @@ ssize_t sqfs_pread(sqfs_fd_t fd, void *buf, size_t count, sqfs_off_t off);
 
 int sqfs_enoattr();
 
-int sqfs_symlink(const char *target, const char *linkpath);
+int sqfs_symlink(struct sqfs* fs, const char *target, const char *linkpath);
 
 #endif

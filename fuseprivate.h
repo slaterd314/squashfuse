@@ -28,9 +28,6 @@
 #include "squashfuse.h"
 
 #include <fuse.h>
-#if WIN_FUSE==1
-#include <fuse_lowlevel.h>
-#endif
 
 #define NOTIFY_SUCCESS 's'
 #define NOTIFY_FAILURE 'f'

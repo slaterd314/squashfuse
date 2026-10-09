@@ -37,6 +37,8 @@ char *sqfs_compression_name(sqfs_compression_type type);
 /* put supported compression types into an array */
 void sqfs_compression_supported(sqfs_compression_type *types);
 
+char* sqfs_compression_version(sqfs_compression_type type);
+
 
 typedef sqfs_err (*sqfs_decompressor)(void *in, size_t insz,
 	void *out, size_t *outsz);

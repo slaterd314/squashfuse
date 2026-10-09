@@ -8,18 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#ifdef _MSC_VER
-#include <direct.h>
-#include <io.h>
-#include <malloc.h>
-#else
 #include <unistd.h>
-#endif
-
 #include <sys/stat.h>
 
-#include "nonstd.h"
 
 #define PROGNAME "squashfuse_extract"
 
@@ -46,42 +37,8 @@ static bool starts_with(const char *pre, const char *str)
     return lenstr < lenpre ? false : strncmp(pre, str, lenpre) == 0;
 }
 
-/* Fill in a stat structure. Does not set st_ino */
-sqfs_err sqfs_stat(sqfs *fs, sqfs_inode *inode, struct fuse_stat *st) {
-	sqfs_err err = SQFS_OK;
-	uid_t id;
-	
-	memset(st, 0, sizeof(*st));
-	st->st_mode = inode->base.mode;
-	st->st_nlink = inode->nlink;
-	st->st_mtim.tv_sec = st->st_ctim.tv_sec = st->st_atim.tv_sec = inode->base.mtime;
-	
-	if (S_ISREG(st->st_mode)) {
-		/* FIXME: do symlinks, dirs, etc have a size? */
-		st->st_size = inode->xtra.reg.file_size;
-		st->st_blocks = st->st_size / 512;
-	} else if (S_ISBLK(st->st_mode) || S_ISCHR(st->st_mode)) {
-		st->st_rdev = sqfs_makedev(inode->xtra.dev.major,
-			inode->xtra.dev.minor);
-	} else if (S_ISLNK(st->st_mode)) {
-		st->st_size = inode->xtra.symlink_size;
-	}
-	
-	st->st_blksize = fs->sb.block_size; /* seriously? */
-	
-	err = sqfs_id_get(fs, inode->base.uid, &id);
-	if (err)
-		return err;
-	st->st_uid = id;
-	err = sqfs_id_get(fs, inode->base.guid, &id);
-	st->st_gid = id;
-	if (err)
-		return err;
-	
-	return SQFS_OK;
-}
-
 #define BYTES_AT_A_TIME (64 * 1024)
+
 
 int main(int argc, char *argv[]) {
     sqfs_err err = SQFS_OK;
@@ -90,7 +47,6 @@ int main(int argc, char *argv[]) {
     char *image;
     char *path_to_extract;
     const char *prefix;
-    char prefixed_path_to_extract[1024];
     struct fuse_stat st;
     
     prefix = "squashfs-root/";

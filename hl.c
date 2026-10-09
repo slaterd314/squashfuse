@@ -90,7 +90,7 @@ static int sqfs_hl_op_getattr(const char *path, struct fuse_stat *st
 			      , struct fuse_file_info *fi
 #endif
 			      ) {
-	sqfs *fs;
+	sqfs *fs=NULL;
 	sqfs_inode inode;
 
 	sqfs_inode *pInode = NULL;

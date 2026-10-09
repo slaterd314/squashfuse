@@ -242,7 +242,7 @@ void notify_mount_ready_async(const char *notify_pipe, char status) {
 #include <process.h>
 
 struct notify_mount_ready_async_args {
-	const char* notify_pipe;
+	char* notify_pipe;
 	char status;
 };
 

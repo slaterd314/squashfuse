@@ -29,6 +29,7 @@
 
 #include <unistd.h>
 
-int sqfs_symlink(const char *target, const char *linkpath) {
+int sqfs_symlink(struct sqfs *fs, const char *target, const char *linkpath) {
+	((void)fs); /* unused */
 	return symlink(target, linkpath);
 }

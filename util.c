@@ -39,13 +39,13 @@
 		if (hFile != INVALID_HANDLE_VALUE)
 		{
 			new_fd = (sqfs_fd_t)_open_osfhandle((intptr_t)hFile, _O_RDONLY|_O_BINARY);
-			if (-1 == new_fd)
+			if (new_fd == -1)
 			{
 				CloseHandle(hFile);
 			}
 		}
 		*fd = new_fd;
-		if (new_fd != INVALID_HANDLE_VALUE)
+		if (new_fd != -1)
 			return SQFS_OK;
 
 		// FIXME: Better error handling
@@ -150,14 +150,6 @@ void sqfs_print_compression_info()
 	}
 	fprintf(stderr, "\t----------------------\n");
 }
-
-#ifndef WIN32
-int sqfs_symlink(sqfs *fs, const char *path1, const char *path2)
-{
-	((void)fs);
-	return symlink(path1, path2);
-}
-#endif
 
 sqfs_err sqfs_open_image(sqfs *fs, const char *image, size_t offset) {
 	return sqfs_open_image_with_subdir(fs, image, offset, NULL);

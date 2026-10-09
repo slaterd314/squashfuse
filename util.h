@@ -43,6 +43,4 @@ sqfs_err sqfs_open_image(sqfs *fs, const char *image, size_t offset);
 
 void sqfs_print_compression_info();
 
-int sqfs_symlink(sqfs *fs, const char *path1, const char *path2);
-
 #endif

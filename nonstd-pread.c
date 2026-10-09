@@ -26,6 +26,7 @@
 
 #ifdef _WIN32
 	#include "win32.h"
+	#include <io.h>
 
 	ssize_t sqfs_pread(sqfs_fd_t fd, void *buf, size_t count, sqfs_off_t off) {
 		DWORD bread;
