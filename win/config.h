@@ -151,3 +151,20 @@
 /* This decl is missing from WinFSP fuse3 headers, although the function is exported.  */
 int fuse_parse_cmdline(struct fuse_args* args,
     char** mountpoint, int* multithreaded, int* foreground);
+
+/* We're giong to use fuse_stat instead of stat
+* First, include sys/stat.h so we can be sure it's not included again.
+*/
+
+#include <sys/stat.h>
+#include <sys/types.h>
+/* Now, include fuse.h to bring in struct fuse_stat */
+#include <fuse.h>
+
+// #define stat fuse_stat
+
+#define off_t fuse_off_t
+#define statvfs fuse_statvfs
+
+typedef fuse_mode_t mode_t;
+

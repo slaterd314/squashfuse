@@ -37,7 +37,6 @@
 
 #ifdef _MSC_VER
 #include <fcntl.h>
-typedef unsigned short mode_t;
 #endif
 
 
@@ -235,7 +234,7 @@ static int sqfs_hl_op_open(const char *path, struct fuse_file_info *fi) {
 	return 0;
 }
 
-static int sqfs_hl_op_create(const char* unused_path, fuse_mode_t unused_mode,
+static int sqfs_hl_op_create(const char* unused_path, mode_t unused_mode,
 		struct fuse_file_info *unused_fi) {
 	return -EROFS;
 }
@@ -246,12 +245,12 @@ static int sqfs_hl_op_release(const char *path, struct fuse_file_info *fi) {
 }
 
 static int sqfs_hl_op_read(const char *path, char *buf, size_t size,
-	fuse_off_t off, struct fuse_file_info *fi) {
+		off_t off, struct fuse_file_info *fi) {
 	sqfs *fs;
 	sqfs_hl_lookup(&fs, NULL, NULL);
 	sqfs_inode *inode = (sqfs_inode*)(intptr_t)fi->fh;
 
-	sqfs_off_t osize = size;
+	off_t osize = size;
 	if (sqfs_read_range(fs, inode, off, &osize, buf))
 		return -EIO;
 	return (int)osize;
@@ -312,7 +311,7 @@ static int sqfs_hl_op_getxattr(const char *path, const char *name,
 	return (int)real;
 }
 
-static int sqfs_hl_op_statfs(const char *path, struct fuse_statvfs *st) {
+static int sqfs_hl_op_statfs(const char *path, struct statvfs *st) {
 	sqfs_hl *hl = fuse_get_context()->private_data;
 	return sqfs_statfs(&hl->fs, st);
 }

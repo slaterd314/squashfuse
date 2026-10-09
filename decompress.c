@@ -166,9 +166,7 @@ static sqfs_err sqfs_decompressor_lz4(void *in, size_t insz,
 
 
 #ifdef HAVE_ZSTD_H
-
 #include <zstd.h>
-
 static sqfs_err sqfs_decompressor_zstd(void *in, size_t insz,
         void *out, size_t *outsz) {
 	const size_t zstdout = ZSTD_decompress(out, *outsz, in, insz);

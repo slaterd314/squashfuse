@@ -59,7 +59,7 @@ int sqfs_opt_proc(void *data, const char *arg, int key,
 	struct fuse_args *outargs);
 
 /* Get filesystem super block info */
-int sqfs_statfs(sqfs *sq, struct fuse_statvfs *st);
+int sqfs_statfs(sqfs *sq, struct statvfs *st);
 void notify_mount_ready(const char *notify_pipe, char status);
 void notify_mount_ready_async(const char *notify_pipe, char status);
 

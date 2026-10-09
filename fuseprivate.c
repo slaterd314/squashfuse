@@ -172,7 +172,7 @@ int sqfs_opt_proc(void *data, const char *arg, int key,
 	return 1; /* Keep */
 }
 
-int sqfs_statfs(sqfs *sq, struct fuse_statvfs *st) {
+int sqfs_statfs(sqfs *sq, struct statvfs *st) {
 	struct squashfs_super_block *sb = &sq->sb;
 
 	st->f_bsize = sb->block_size;
