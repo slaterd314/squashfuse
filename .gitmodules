@@ -4,3 +4,6 @@
 [submodule "win/3rdparty/zstd"]
 	path = win/3rdparty/zstd
 	url = ../zstd.git
+[submodule "win/3rdparty/xz"]
+	path = win/3rdparty/xz
+	url = https://github.com/tukaani-project/xz.git
